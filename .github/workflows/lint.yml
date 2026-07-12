@@ -41,22 +41,58 @@ jobs:
         run: make fclean
 
   clang-format:
-    name: clang-format check
+    name: clang-format
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # need a real ref (not detached HEAD) so we can push back to it
+          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Install clang-format
         run: sudo apt-get update && sudo apt-get install -y clang-format
 
-      - name: Check formatting
+      - name: Collect source files
+        id: files
         run: |
-          set -e
           shopt -s globstar nullglob
           files=(srcs/**/*.cpp includes/**/*.hpp includes/**/*.h)
+          echo "list=${files[*]}" >> "$GITHUB_OUTPUT"
+
+      # --- On a direct push: auto-fix and commit the result ---
+      - name: Auto-format
+        if: github.event_name == 'push'
+        run: |
+          set -e
+          files=(${{ steps.files.outputs.list }})
           if [ ${#files[@]} -eq 0 ]; then
-            echo "No source files found to check"; exit 0
+            echo "No source files found"; exit 0
           fi
-          echo "Checking format of: ${files[*]}"
+          clang-format -i "${files[@]}"
+
+      - name: Commit formatting fixes
+        if: github.event_name == 'push'
+        run: |
+          if git diff --quiet; then
+            echo "Nothing to format, all good."
+            exit 0
+          fi
+          git config user.name "clang-format-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "style: auto clang-format [skip ci]"
+          git push
+
+      # --- On a pull request: just check, don't push to someone else's branch ---
+      - name: Check formatting (PRs only)
+        if: github.event_name == 'pull_request'
+        run: |
+          set -e
+          files=(${{ steps.files.outputs.list }})
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No source files found"; exit 0
+          fi
           clang-format --dry-run --Werror "${files[@]}"
