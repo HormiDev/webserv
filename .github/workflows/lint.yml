@@ -15,11 +15,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build with project Makefile
+        env:
+          TERM: xterm-256color
         run: make re
 
       - name: Compile every .cpp directly with -std=c++98 -Wall -Wextra -Werror
-        # Belt and braces: this doesn't depend on the Makefile flags staying
-        # correct, it re-checks every source file explicitly.
         run: |
           set -e
           shopt -s globstar nullglob
@@ -36,6 +36,8 @@ jobs:
 
       - name: fclean
         if: always()
+        env:
+          TERM: xterm-256color
         run: make fclean
 
   clang-format:
