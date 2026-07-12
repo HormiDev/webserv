@@ -1,0 +1,60 @@
+name: Lint
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+
+jobs:
+  build-cpp98:
+    name: Build (strict C++98)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build with project Makefile
+        run: make re
+
+      - name: Compile every .cpp directly with -std=c++98 -Wall -Wextra -Werror
+        # Belt and braces: this doesn't depend on the Makefile flags staying
+        # correct, it re-checks every source file explicitly.
+        run: |
+          set -e
+          shopt -s globstar nullglob
+          files=(srcs/**/*.cpp)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No .cpp files found under srcs/"; exit 1
+          fi
+          echo "Checking: ${files[*]}"
+          for f in "${files[@]}"; do
+            echo "::group::$f"
+            c++ -std=c++98 -Wall -Wextra -Werror -Iincludes -c "$f" -o /dev/null
+            echo "::endgroup::"
+          done
+
+      - name: fclean
+        if: always()
+        run: make fclean
+
+  clang-format:
+    name: clang-format check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: sudo apt-get update && sudo apt-get install -y clang-format
+
+      - name: Check formatting
+        run: |
+          set -e
+          shopt -s globstar nullglob
+          files=(srcs/**/*.cpp includes/**/*.hpp includes/**/*.h)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No source files found to check"; exit 0
+          fi
+          echo "Checking format of: ${files[*]}"
+          clang-format --dry-run --Werror "${files[@]}"
