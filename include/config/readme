@@ -1,0 +1,9 @@
+La clase Config (Config.hpp) representa a un objeto config que es el que tiene toda la info parseada desde el archivo de configuración (webserv.conf) 
+Por el momento solo tiene los campos básicos:
+    port: Por el puerto que el servidor escucha las peticiones.
+    root: Donde empieza a buscar los elementos pedidos.
+    index: Cuál es la pagina a devolver por defecto.
+            Por ejemplo si se solicita "/" (poniendo en el navegador http://localhost:8080) entonces buscará la página que indica "index" dentro del path indicado por "root"
+            Si la peticion es "/helloWorld.html" (poniendo en el navegador http://localhost:8080/helloWorld.html), buscará esa pagina dentro de donde indique "root"
+
+La clase ConfigParser (ConfigParser.hpp) es la que se encargará de leer el fichero de conf y transformarlo a un objeto de clase Config,que será lo que devuelve.

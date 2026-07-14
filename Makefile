@@ -1,94 +1,76 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: ide-dieg <ide-dieg@student.42madrid.com    +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2026/07/01 13:08:20 by ide-dieg          #+#    #+#              #
-#    Updated: 2026/07/01 13:47:40 by ide-dieg         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
+NAME		=	webserv
 
-RED = \033[0;31m
-GREEN = \033[0;32m
-YELLOW = \033[0;33m
+CC			=	c++
+CPPFLAGS	=	-Wall -Werror -Wextra -std=c++98
 
-CC = c++
+# directories
+SRC_DIR		=	src/
+OBJ_DIR		=	obj/
+INC_DIR		=	include/
 
-CFLAGS = -Wall -Wextra -Werror -std=c++98
-INCLUDES = -Iincludes
+# controll codes
+RESET		=	\033[0m
+GREEN		=	\033[32m
+YELLOW		=	\033[33m
+BLUE		=	\033[34m
+RED			=	\033[31m
+UP			=	\033[A
+CUT			=	\033[K
 
-NAME = webserv
+#source files
+SRC_FILES	=	main.cpp \
+				server/Server.cpp \
+				config/Config.cpp \
+				config/ConfigParser.cpp \
+				http/HTTPException.cpp \
+				http/HTTPRequest.cpp \
+				http/HTTPRequestParser.cpp \
+				http/HTTPResponse.cpp \
+				http/HTTPResponseSerializer.cpp \
+				http/HttpStatus.cpp \
 
-SRCS_DIR = srcs
+OBJ_FILES	=	$(SRC_FILES:.cpp=.o)
 
-OBJ_DIR = objs
+#paths
+SRC			=	$(addprefix $(SRC_DIR), $(SRC_FILES))
+OBJ			=	$(addprefix $(OBJ_DIR), $(OBJ_FILES))
 
-SRCS =	main.cpp \
-		Config.cpp
-
-
-OBJS = $(SRCS:%.cpp=$(OBJ_DIR)/%.o)
-
+#all rule
 all: $(NAME)
 
-$(NAME): ide-dieg cpp_title $(OBJS)
-	@echo "$(YELLOW)Compiling $(NAME)...$(GREEN)"
-	@$(CC) $(CFLAGS) -o $@ $(OBJS)
-	@tput cuu1 && tput el
-	@echo "$(GREEN)Compilation complete!$(NC)"
+#compile the executable
+$(NAME): $(OBJ)
+	@echo -e "$(YELLOW)Compiling [$(NAME)]...$(RESET)"
+	@$(CC) $(CPPFLAGS) $(OBJ) -o $(NAME)
+	@echo -e "$(GREEN)Finished [$(NAME)]$(RESET)"
 
-$(OBJ_DIR)/%.o: $(SRCS_DIR)/%.cpp | $(OBJ_DIR)
-	@echo "$(YELLOW)Bounding $< to object file...$(NC)"
-	@$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
-	@tput cuu1 && tput el
-	@echo "$(GREEN)Object file $< created!$(NC)"
+#compile objects
+$(OBJ_DIR)%.o:$(SRC_DIR)%.cpp
+	@mkdir -p $(dir $@)
+	@echo -e "$(YELLOW)Compiling [$@]...$(RESET)"
+	@$(CC) $(CPPFLAGS) -I $(INC_DIR) -o $@ -c $<
+	@printf "$(UP)$(CUT)"
+	@echo -e "$(GREEN)Finished [$@]$(RESET)"
+	@printf "$(UP)$(CUT)"
 
-$(OBJ_DIR):
-	@mkdir -p $(OBJ_DIR)
-
+#clean rule
 clean:
-	@echo "$(RED)Cleaning up object files...$(NC)"
-	@rm -rf $(OBJ_DIR)
-	@tput cuu1 && tput el
-	@echo "$(GREEN)Object files cleaned!$(NC)"
+	@if [ -d "$(OBJ_DIR)" ]; then \
+	rm -rf $(OBJ_DIR); \
+	echo -e "$(BLUE)Deleting all objects $(RESET)"; else \
+	echo "No objects to remove."; \
+	fi;
 
+#fclean rule
 fclean: clean
-	@echo "$(RED)Cleaning up $(NAME)...$(NC)"
-	@rm -f $(NAME)
-	@tput cuu1 && tput el
-	@echo "$(GREEN)All clean!$(NC)"	
+	@if [ -f "$(NAME)" ]; then \
+	rm -f $(NAME); \
+	echo -e "$(BLUE)Deleting $(NAME) $(RESET)"; else \
+	echo "No Executable to remove."; \
+	fi;
 
+#re rule
 re: fclean all
 
-ROJO = \033[0;31m
-NC = \033[0m
-NARANJA = \033[0;33m
-AZUL = \033[0;34m
-VERDE = \033[0;32m
-
-ide-dieg:
-	@echo "$(ROJO)  __  ____  ____     ____  __  ____  ___        $(AZUL) ██╗  ██╗██████╗ "
-	@echo "$(ROJO) (  )(    \(  __)___(    \(  )(  __)/ __)       $(AZUL) ██║  ██║╚════██╗"
-	@echo "$(ROJO)  )(  ) D ( ) _)(___)) D ( )(  ) _)( (_ \       $(AZUL) ███████║ █████╔╝"
-	@echo "$(ROJO) (__)(____/(____)   (____/(__)(____)\___/       $(AZUL) ╚════██║██╔═══╝ "
-	@echo "$(NARANJA) _  _  _  _  __  ____   __   __         _  _    $(AZUL)      ██║███████╗"
-	@echo "$(NARANJA)( \/ )/ )( \(  )(    \ / _\ (  )   ___ / )( \   $(AZUL)      ╚═╝╚══════╝"
-	@echo "$(NARANJA)/ \/ \\\\\\\\ \/ / )(  ) D (/    \/ (_/\(___)) __ (   $(VERDE)       ██╗  "
-	@echo "$(NARANJA)\_)(_/ \__/ (__)(____/\_/\_/\____/     \_)(_/   $(VERDE)   ██╗ ╚═██╗"
-	@echo "$(AZUL)  __  ____  _  _  _  _  ____  ____  __ _   __   $(VERDE)   ╚═╝   ██║"
-	@echo "$(AZUL) (  )/ ___)( \/ )/ )( \(  __)(  _ \(  ( \ / _\  $(VERDE)   ██╗   ██║"
-	@echo "$(AZUL)  )( \___ \/ \/ \) __ ( ) _)  )   //    //    \ $(VERDE)   ╚═╝ ██╔═╝ "
-	@echo "$(AZUL) (__)(____/\_)(_/\_)(_/(____)(__\_)\_)__)\_/\_/ $(VERDE)       ╚═╝  $(NC)"
-
-cpp_title:
-	@echo
-	@echo "██╗    ██╗███████╗██████╗ ███████╗███████╗██████╗ ██╗   ██╗"
-	@echo "██║    ██║██╔════╝██╔══██╗██╔════╝██╔════╝██╔══██╗██║   ██║"
-	@echo "██║ █╗ ██║█████╗  ██████╔╝███████╗█████╗  ██████╔╝██║   ██║"
-	@echo "██║███╗██║██╔══╝  ██╔══██╗╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝"
-	@echo "╚███╔███╔╝███████╗██████╔╝███████║███████╗██║  ██║ ╚████╔╝ "
-	@echo " ╚══╝╚══╝ ╚══════╝╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  "
-	
-.PHONY: all clean fclean re ide-dieg cpp_title
+#phony
+.PHONY: all clean fclean re

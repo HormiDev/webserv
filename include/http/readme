@@ -1,0 +1,10 @@
+La clase HTTPRequest contiene la info ya parseada del la petición del cliente recogida con el recv. Es como la orden de un cliente en un restaurante.
+    Es parseada por la clase HTTPRequestParser. (Lo mismo que pasaba con Config y ConfigParser.)
+
+HTTPResponse tiene la info ya estructurada de la info que tendremos que devolver, creada a partir de la clase HTTPRequest y los archivos buscados. (Es como el plato ya preparado para el cliente en un restaurante.)
+HTTPResponseSerializer convertira el objeto HTTPResponse en un std::string que es como tiene que devolverse porque HTTP mueve siempre la info en texto.
+
+HTTPException es una clase que nos permite lanzar nuestras propias excepciones con un código de error HTTP. Por ejemplo, si el cliente nos manda una petición mal formada, podemos lanzar una HTTPException con el código 400 (BAD_REQUEST) y luego crear una respuesta HTTP con ese código para enviarla al cliente.
+
+HTTPStatus define un enum con los códigos de estado HTTP que vamos a usar en nuestro servidor. Por ejemplo, 200 (OK), 404 (NOT_FOUND), 500 (INTERNAL_SERVER_ERROR), etc.
+También tiene una función getStatusMessage que nos devuelve el mensaje correspondiente a cada código de estado.

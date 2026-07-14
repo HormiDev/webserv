@@ -3,14 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   Config.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ide-dieg <ide-dieg@student.42madrid.com    +#+  +:+       +#+        */
+/*   By: mvidal-h <mvidal-h@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/07/01 12:18:50 by ide-dieg          #+#    #+#             */
-/*   Updated: 2026/07/01 13:44:14 by ide-dieg         ###   ########.fr       */
+/*   Created: 2026/07/03 15:28:35 by mvidal-h          #+#    #+#             */
+/*   Updated: 2026/07/14 14:57:07 by mvidal-h         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Config.hpp"
+#include "config/Config.hpp"
+#include <fstream>
+#include <sstream>
+#include <vector>
 
 /**
  * Default constructor for the Config class. Initializes default values for
@@ -29,8 +32,7 @@ Config::Config() : _root("./"), _index("index.html"), _port(8080)
  * Copy constructor for the Config class. Creates a new Config object as a copy
  * of another.
  */
-Config::Config(const Config &other)
-	: _filename(other._filename), _root(other._root), _index(other._index), _port(other._port)
+Config::Config(const Config& other) : _root(other._root), _index(other._index), _port(other._port)
 {
 	std::cout << BOLD_GREEN << "Config copy constructor called" << RESET << std::endl;
 }
@@ -39,11 +41,10 @@ Config::Config(const Config &other)
  * Assignment operator for the Config class. Assigns values from another Config
  * object to this one.
  */
-Config &Config::operator=(const Config &other)
+Config& Config::operator=(const Config& other)
 {
 	if (this != &other)
 	{
-		_filename = other._filename;
 		_root = other._root;
 		_index = other._index;
 		_port = other._port;
@@ -58,29 +59,6 @@ Config &Config::operator=(const Config &other)
 Config::~Config()
 {
 	std::cout << BOLD_RED << "Config destructor called" << RESET << std::endl;
-}
-
-/**
- * Loads configuration from a file.
- * @param filename The name of the file to load configuration from.
- */
-void Config::load(const std::string &filename)
-{
-	_filename = filename;
-	std::cout << BOLD_YELLOW << "Loading configuration from: " << filename << RESET << std::endl;
-
-	//code to load configuration from file (not implemented)
-}
-
-/**
- * Constructor for the Config class. Initializes the filename and calls load.
- * @param filename The name of the file to load configuration from.
- */
-Config::Config(const std::string &filename)
-	: _filename(filename), _root("./"), _index("index.html"), _port(8080)
-{
-	std::cout << BOLD_GREEN << "Config constructor with filename called" << RESET << std::endl;
-	load(filename);
 }
 
 /**
@@ -114,7 +92,7 @@ int Config::getPort() const
  * Sets the root directory.
  * @param root The root directory.
  */
-void Config::setRoot(const std::string &root)
+void Config::setRoot(const std::string& root)
 {
 	_root = root;
 }
@@ -123,7 +101,7 @@ void Config::setRoot(const std::string &root)
  * Sets the index file.
  * @param index The index file.
  */
-void Config::setIndex(const std::string &index)
+void Config::setIndex(const std::string& index)
 {
 	_index = index;
 }
