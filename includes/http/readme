@@ -2,7 +2,7 @@ La clase HTTPRequest contiene la info ya parseada del la petición del cliente r
     Es parseada por la clase HTTPRequestParser. (Lo mismo que pasaba con Config y ConfigParser.)
 
 HTTPResponse tiene la info ya estructurada de la info que tendremos que devolver, creada a partir de la clase HTTPRequest y los archivos buscados. (Es como el plato ya preparado para el cliente en un restaurante.)
-HTTPResponseSerializer convertira el objeto HTTPResponse en un std::string que es como tiene que devolverse porque HTTP mueve siempre la info en texto.
+HTTPResponse tiene un método serialize que convierte el objeto en un std::string que es como tiene que devolverse porque HTTP mueve siempre la info en texto.
 
 HTTPException es una clase que nos permite lanzar nuestras propias excepciones con un código de error HTTP. Por ejemplo, si el cliente nos manda una petición mal formada, podemos lanzar una HTTPException con el código 400 (BAD_REQUEST) y luego crear una respuesta HTTP con ese código para enviarla al cliente.
 

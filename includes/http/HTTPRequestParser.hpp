@@ -13,6 +13,7 @@ class HTTPRequestParser
 							~HTTPRequestParser();
 
 		HTTPRequest			parse(const std::string& rawRequest);
+		bool				isRequestComplete(const std::string& buffer);
 
 	private:
 		void				parseRequestLine(HTTPRequest& request, const std::string& rawRequest);

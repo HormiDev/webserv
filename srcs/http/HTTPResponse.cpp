@@ -6,12 +6,13 @@
 /*   By: mvidal-h <mvidal-h@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/10 12:50:27 by mvidal-h          #+#    #+#             */
-/*   Updated: 2026/07/14 14:57:50 by mvidal-h         ###   ########.fr       */
+/*   Updated: 2026/07/15 17:43:36 by mvidal-h         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "http/HTTPResponse.hpp"
 #include <iostream>
+#include <sstream>
 #include "colors.hpp"
 
 /**
@@ -144,4 +145,49 @@ void HTTPResponse::setHeader(const std::string& key, const std::string& value)
 void HTTPResponse::setBody(const std::string& newBody)
 {
 	_body = newBody;
+}
+
+/**
+ * Serializes an HTTP response into a string.
+ * 
+ * @return The serialized string representing the HTTP response.
+ */
+std::string HTTPResponse::serialize() const
+{
+	std::string serializedResponse;
+	serializedResponse += serializeStatusLine();
+	serializedResponse += serializeHeaders();
+	serializedResponse += "\r\n"; // Blank line to separate headers from body
+	serializedResponse += _body;
+	return serializedResponse;
+}
+
+/**
+ * Serializes the status line of an HTTP response.
+ * 
+ * @return The serialized status line string.
+ */
+std::string HTTPResponse::serializeStatusLine() const
+{
+	std::ostringstream serializedStatusStream;
+	serializedStatusStream	<< "HTTP/1.1 " 
+							<< _statusCode 
+							<< " " << _statusMessage
+							<< "\r\n";
+	return serializedStatusStream.str();
+}
+
+/**
+ * Serializes the headers of an HTTP response transforming them into a string.
+ * 
+ * @return The serialized headers string.
+ */
+std::string HTTPResponse::serializeHeaders() const
+{
+	std::ostringstream serializedHeadersStream;
+	for (std::map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
+	{
+		serializedHeadersStream << it->first << ": " << it->second << "\r\n";
+	}
+	return serializedHeadersStream.str();
 }

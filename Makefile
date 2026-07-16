@@ -4,9 +4,9 @@ CC			=	c++
 CPPFLAGS	=	-Wall -Werror -Wextra -std=c++98
 
 # directories
-SRC_DIR		=	src/
-OBJ_DIR		=	obj/
-INC_DIR		=	include/
+SRC_DIR		=	srcs/
+OBJ_DIR		=	objs/
+INC_DIR		=	includes/
 
 # controll codes
 RESET		=	\033[0m
@@ -20,13 +20,13 @@ CUT			=	\033[K
 #source files
 SRC_FILES	=	main.cpp \
 				server/Server.cpp \
+				server/Client.cpp \
 				config/Config.cpp \
 				config/ConfigParser.cpp \
 				http/HTTPException.cpp \
 				http/HTTPRequest.cpp \
 				http/HTTPRequestParser.cpp \
 				http/HTTPResponse.cpp \
-				http/HTTPResponseSerializer.cpp \
 				http/HttpStatus.cpp \
 
 OBJ_FILES	=	$(SRC_FILES:.cpp=.o)

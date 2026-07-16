@@ -60,6 +60,17 @@ HTTPRequest HTTPRequestParser::parse(const std::string& rawRequest)
 }
 
 /**
+ * Checks if the HTTP request is complete.
+ * 
+ * buffer: The buffer containing the raw HTTP request string.
+ * @return True if the request is complete, false otherwise.
+ */
+bool HTTPRequestParser::isRequestComplete(const std::string& buffer)
+{
+	return buffer.find("\r\n\r\n") != std::string::npos; // Check for the end of headers
+}
+
+/**
  * Parses the request line of the HTTP request.
  * 
  * request: The HTTPRequest object to populate.
