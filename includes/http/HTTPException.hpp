@@ -17,17 +17,16 @@
 
 class HTTPException : public std::exception
 {
-	private:
-		int _statusCode;
+private:
+	int _statusCode;
 
-	public:
+public:
+	HTTPException(int statusCode);
+	HTTPException(const HTTPException &other);
+	HTTPException &operator=(const HTTPException &other);
+	virtual ~HTTPException() throw();
 
-		HTTPException(int statusCode);
-		HTTPException(const HTTPException& other);
-		HTTPException& operator=(const HTTPException& other);
-		virtual ~HTTPException() throw();
-		
-		int getStatusCode() const;
+	int getStatusCode() const;
 };
 
 #endif

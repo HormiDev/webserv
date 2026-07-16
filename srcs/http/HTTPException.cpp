@@ -22,14 +22,14 @@ HTTPException::HTTPException(int statusCode) : _statusCode(statusCode) {}
  * 
  * other: The HTTPException object to copy.
  */
-HTTPException::HTTPException(const HTTPException& other) : _statusCode(other._statusCode) {}
+HTTPException::HTTPException(const HTTPException &other) : _statusCode(other._statusCode) {}
 
 /** Assignment operator for HTTPException
  * 
  * other: The HTTPException object to assign.
  * @return A reference to the assigned object.
  */
-HTTPException& HTTPException::operator=(const HTTPException& other)
+HTTPException &HTTPException::operator=(const HTTPException &other)
 {
 	if (this != &other)
 		_statusCode = other._statusCode;

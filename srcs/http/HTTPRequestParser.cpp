@@ -18,7 +18,7 @@ HTTPRequestParser::HTTPRequestParser()
  * 
  * other: The HTTPRequestParser object to copy.
  */
-HTTPRequestParser::HTTPRequestParser(const HTTPRequestParser& other)
+HTTPRequestParser::HTTPRequestParser(const HTTPRequestParser &other)
 {
 	(void)other;
 	std::cout << BOLD_GREEN << "HTTPRequestParser copy constructor called" << RESET << std::endl;
@@ -30,7 +30,7 @@ HTTPRequestParser::HTTPRequestParser(const HTTPRequestParser& other)
  * other: The HTTPRequestParser object to assign.
  * @return A reference to the assigned object.
  */
-HTTPRequestParser& HTTPRequestParser::operator=(const HTTPRequestParser& other)
+HTTPRequestParser &HTTPRequestParser::operator=(const HTTPRequestParser &other)
 {
 	(void)other;
 	std::cout << BOLD_GREEN << "HTTPRequestParser assignment operator called" << RESET << std::endl;
@@ -51,7 +51,7 @@ HTTPRequestParser::~HTTPRequestParser()
  * rawRequest: The raw HTTP request string to parse.
  * @return An HTTPRequest object initialized with the parsed values.
  */
-HTTPRequest HTTPRequestParser::parse(const std::string& rawRequest)
+HTTPRequest HTTPRequestParser::parse(const std::string &rawRequest)
 {
 	HTTPRequest request;
 	parseRequestLine(request, rawRequest);
@@ -65,7 +65,7 @@ HTTPRequest HTTPRequestParser::parse(const std::string& rawRequest)
  * buffer: The buffer containing the raw HTTP request string.
  * @return True if the request is complete, false otherwise.
  */
-bool HTTPRequestParser::isRequestComplete(const std::string& buffer)
+bool HTTPRequestParser::isRequestComplete(const std::string &buffer)
 {
 	return buffer.find("\r\n\r\n") != std::string::npos; // Check for the end of headers
 }
@@ -76,7 +76,7 @@ bool HTTPRequestParser::isRequestComplete(const std::string& buffer)
  * request: The HTTPRequest object to populate.
  * rawRequest: The raw HTTP request string.
  */
-void HTTPRequestParser::parseRequestLine(HTTPRequest& request, const std::string& rawRequest)
+void HTTPRequestParser::parseRequestLine(HTTPRequest &request, const std::string &rawRequest)
 {
 	std::istringstream rawStream(rawRequest);
 	std::string requestLine;
@@ -87,7 +87,8 @@ void HTTPRequestParser::parseRequestLine(HTTPRequest& request, const std::string
 	std::istringstream requestLineStream(requestLine);
 	std::string method, path, version, extra;
 
-	if (!(requestLineStream >> method >> path >> version)) // Intenta leer exactamente los tres campos de la request line. Si alguna lectura falla, el stream entra en estado de error.
+	if (!(requestLineStream >> method >> path >>
+		  version)) // Intenta leer exactamente los tres campos de la request line. Si alguna lectura falla, el stream entra en estado de error.
 		throw HTTPException(BAD_REQUEST);
 	if (requestLineStream >> extra) //si hay más datos en el stream, es un error
 		throw HTTPException(BAD_REQUEST);
@@ -95,7 +96,6 @@ void HTTPRequestParser::parseRequestLine(HTTPRequest& request, const std::string
 	parseMethod(request, method);
 	parsePath(request, path);
 	parseVersion(request, version);
-
 }
 
 /**
@@ -104,7 +104,7 @@ void HTTPRequestParser::parseRequestLine(HTTPRequest& request, const std::string
  * request: The HTTPRequest object to populate.
  * method: The method string to parse.
  */
-void	HTTPRequestParser::parseMethod(HTTPRequest& request, const std::string& method)
+void HTTPRequestParser::parseMethod(HTTPRequest &request, const std::string &method)
 {
 	if (method != "GET" && method != "POST" && method != "DELETE")
 		throw HTTPException(METHOD_NOT_ALLOWED);
@@ -117,7 +117,7 @@ void	HTTPRequestParser::parseMethod(HTTPRequest& request, const std::string& met
  * request: The HTTPRequest object to populate.
  * path: The path string to parse.
  */
-void	HTTPRequestParser::parsePath(HTTPRequest& request, const std::string& path)
+void HTTPRequestParser::parsePath(HTTPRequest &request, const std::string &path)
 {
 	if (path.empty() || path[0] != '/')
 		throw HTTPException(BAD_REQUEST);
@@ -130,7 +130,7 @@ void	HTTPRequestParser::parsePath(HTTPRequest& request, const std::string& path)
  * request: The HTTPRequest object to populate.
  * version: The version string to parse.
  */
-void	HTTPRequestParser::parseVersion(HTTPRequest& request, const std::string& version)
+void HTTPRequestParser::parseVersion(HTTPRequest &request, const std::string &version)
 {
 	//Pensar si aceptamos también HTTP/1.0, o solo HTTP/1.1. Por ahora solo aceptamos HTTP/1.1
 	if (version != "HTTP/1.1")

@@ -32,7 +32,7 @@ ConfigParser::ConfigParser() : _pos(0)
  * 
  * other: The ConfigParser object to copy from.
  */
-ConfigParser::ConfigParser(const ConfigParser& other) : _tokens(other._tokens), _pos(other._pos)
+ConfigParser::ConfigParser(const ConfigParser &other) : _tokens(other._tokens), _pos(other._pos)
 {
 	std::cout << BOLD_GREEN << "ConfigParser copy constructor called" << RESET << std::endl;
 }
@@ -43,7 +43,7 @@ ConfigParser::ConfigParser(const ConfigParser& other) : _tokens(other._tokens), 
  * other: The ConfigParser object to assign from.
  * @return A reference to the assigned ConfigParser object.
  */
-ConfigParser& ConfigParser::operator=(const ConfigParser& other)
+ConfigParser &ConfigParser::operator=(const ConfigParser &other)
 {
 	if (this != &other)
 	{
@@ -68,11 +68,12 @@ ConfigParser::~ConfigParser()
  * filename: The path to the configuration file.
  * @return A Config object initialized with the parsed values.
  */
-Config ConfigParser::parse(const std::string& filename)
+Config ConfigParser::parse(const std::string &filename)
 {
 	Config config;
 
-	_tokens.clear(); // Hacemos Clear pare eliminar cualquier token previo en caso de que se llame a parse varias veces con diferentes archivos de configuración.
+	_tokens
+		.clear(); // Hacemos Clear pare eliminar cualquier token previo en caso de que se llame a parse varias veces con diferentes archivos de configuración.
 	_pos = 0;
 
 	std::ifstream configFile(filename.c_str());
@@ -87,23 +88,26 @@ Config ConfigParser::parse(const std::string& filename)
 	//  "{"  "}" y ";" para que puedan ser tokenizados correctamente con el stringstream y el operador >>)
 	// Se normalizan porque podria aparecer tal que asi: "server{ port 8080;}" y eso no se tokenizaria correctamente, ya que el operador >> separa por espacios."
 	// Al final lo que queremos es que esten tal que asi: "server { port 8080 ; }"" para que se tokenice correctamente.
-	for (size_t i = 0; i < fileContent.size(); ++i) 
+	for (size_t i = 0; i < fileContent.size(); ++i)
 	{
-		if (fileContent[i] == '{' || fileContent[i] == '}' || fileContent[i] == ';') // Remove carriage return characters
+		if (fileContent[i] == '{' || fileContent[i] == '}' ||
+			fileContent[i] == ';') // Remove carriage return characters
 		{
 			normalizedContent += " ";
 			normalizedContent += fileContent[i];
 			normalizedContent += " ";
-		}	
+		}
 		else
 			normalizedContent += fileContent[i];
 	}
 	//Una vez los tenemos normalizados, los tokenizamos y los guardamos en el vector _tokens. Quedaría tal que asi: server, {, port, 8080, ;, },
 	std::stringstream ss(normalizedContent);
 	std::string token;
-	while (ss >> token) //Vamos leyento token a token con el operador >> y los vamos guardando en el vector _tokens con push_back.
+	while (
+		ss >>
+		token) //Vamos leyento token a token con el operador >> y los vamos guardando en el vector _tokens con push_back.
 		_tokens.push_back(token);
-	
+
 	parseServer(config);
 	return config;
 }
@@ -113,7 +117,7 @@ Config ConfigParser::parse(const std::string& filename)
  * 
  * @return A reference to the current token.
  */
-const std::string& ConfigParser::current() const
+const std::string &ConfigParser::current() const
 {
 	if (_pos < _tokens.size())
 		return _tokens[_pos];
@@ -138,7 +142,7 @@ void ConfigParser::next()
  * 
  * token: The token to expect.
  */
-void ConfigParser::expect(const std::string& token)
+void ConfigParser::expect(const std::string &token)
 {
 	if (current() != token)
 		throw std::runtime_error("Expected token: " + token + ", but found: " + current());
@@ -150,13 +154,18 @@ void ConfigParser::expect(const std::string& token)
  * 
  * config: The Config object to initialize.
  */
-void ConfigParser::parseServer(Config& config)
+void ConfigParser::parseServer(Config &config)
 {
-	expect("server"); // Si el primer token no es "server", lanzamos un error porque sabemos que el archivo de conf esta mal formado. Si lo es, avanza al siguiente.
-	expect("{"); //Lo mismo qon la llave de apertura del bloque de configuracion del server. De esta manera vamos comprobando que este bien formado el archivo de configuracion.
-	while (current() != "}")// Mientras no encontremos la llave de cierre del bloque de configuracion del server, seguimos parseando los tokens.
+	expect(
+		"server"); // Si el primer token no es "server", lanzamos un error porque sabemos que el archivo de conf esta mal formado. Si lo es, avanza al siguiente.
+	expect(
+		"{"); //Lo mismo qon la llave de apertura del bloque de configuracion del server. De esta manera vamos comprobando que este bien formado el archivo de configuracion.
+	while (
+		current() !=
+		"}") // Mientras no encontremos la llave de cierre del bloque de configuracion del server, seguimos parseando los tokens.
 	{
-		if (current() == "port") // Si el token es port parseamos el puerto y lo guardamos en el objeto config. 
+		if (current() ==
+			"port") // Si el token es port parseamos el puerto y lo guardamos en el objeto config.
 			parsePort(config);
 		else if (current() == "root")
 			parseRoot(config);
@@ -173,16 +182,22 @@ void ConfigParser::parseServer(Config& config)
  * 
  * config: The Config object to initialize.
  */
-void ConfigParser::parsePort(Config& config)
+void ConfigParser::parsePort(Config &config)
 {
-	expect("port"); // Si el token actual es "port", avanzamos al siguiente token que debería ser el número de puerto.
+	expect(
+		"port"); // Si el token actual es "port", avanzamos al siguiente token que debería ser el número de puerto.
 	char *end;
-	long port = std::strtol(current().c_str(), &end, 10); // Convertimos el token actual a un número entero (long) usando strtol. end apunta al primer caracter que no se pudo convertir. (el 10 es la base a lo que lo queremos convertir)
-	if (*end != '\0' || port < 1 || port > 65535) // Si end no apunta al final de la cadena, significa que hubo caracteres no numéricos en el token. Además, comprobamos que el puerto esté en el rango válido (1-65535).
+	long port = std::strtol(
+		current().c_str(), &end,
+		10); // Convertimos el token actual a un número entero (long) usando strtol. end apunta al primer caracter que no se pudo convertir. (el 10 es la base a lo que lo queremos convertir)
+	if (*end != '\0' || port < 1 ||
+		port >
+			65535) // Si end no apunta al final de la cadena, significa que hubo caracteres no numéricos en el token. Además, comprobamos que el puerto esté en el rango válido (1-65535).
 		throw std::runtime_error("Invalid port number: " + current());
 	config.setPort(port); // Si todo es correcto, establecemos el puerto en el objeto config.
-	next(); // Avanzamos al siguiente token, que debería ser el punto y coma.
-	expect(";"); // Comprobamos que el siguiente token sea un punto y coma, que indica el final de la directiva de puerto. SI no lo es lanzamos un error porque no estaria bien formado.
+	next();				  // Avanzamos al siguiente token, que debería ser el punto y coma.
+	expect(
+		";"); // Comprobamos que el siguiente token sea un punto y coma, que indica el final de la directiva de puerto. SI no lo es lanzamos un error porque no estaria bien formado.
 }
 
 /**
@@ -190,13 +205,15 @@ void ConfigParser::parsePort(Config& config)
  * 
  * config: The Config object to initialize.
  */
-void ConfigParser::parseRoot(Config& config)
+void ConfigParser::parseRoot(Config &config)
 {
-	expect("root"); // Si el token actual es "root", avanzamos al siguiente token que debería ser la ruta raíz.
+	expect(
+		"root"); // Si el token actual es "root", avanzamos al siguiente token que debería ser la ruta raíz.
 	std::string root = current(); // Obtenemos el valor del token actual.
-	config.setRoot(root); // Establecemos la ruta raíz en el objeto config.
-	next(); // Avanzamos al siguiente token, que debería ser el punto y coma.
-	expect(";"); // Comprobamos que el siguiente token sea un punto y coma, que indica el final de la directiva de raíz. SI no lo es lanzamos un error porque no estaria bien formado.
+	config.setRoot(root);		  // Establecemos la ruta raíz en el objeto config.
+	next();						  // Avanzamos al siguiente token, que debería ser el punto y coma.
+	expect(
+		";"); // Comprobamos que el siguiente token sea un punto y coma, que indica el final de la directiva de raíz. SI no lo es lanzamos un error porque no estaria bien formado.
 }
 
 /**
@@ -204,12 +221,14 @@ void ConfigParser::parseRoot(Config& config)
  * 
  * config: The Config object to initialize.
  */
-void ConfigParser::parseIndex(Config& config)
+void ConfigParser::parseIndex(Config &config)
 {
-	expect("index"); // Si el token actual es "index", avanzamos al siguiente token que debería ser el nombre del archivo index.
+	expect(
+		"index"); // Si el token actual es "index", avanzamos al siguiente token que debería ser el nombre del archivo index.
 
 	std::string index = current(); // Obtenemos el valor del token actual.
-	config.setIndex(index); // Establecemos el nombre del archivo index en el objeto config.
+	config.setIndex(index);		   // Establecemos el nombre del archivo index en el objeto config.
 	next(); // Avanzamos al siguiente token, que debería ser el punto y coma.
-	expect(";"); // Comprobamos que el siguiente token sea un punto y coma, que indica el final de la directiva de index. SI no lo es lanzamos un error porque no estaria bien formado.
+	expect(
+		";"); // Comprobamos que el siguiente token sea un punto y coma, que indica el final de la directiva de index. SI no lo es lanzamos un error porque no estaria bien formado.
 }

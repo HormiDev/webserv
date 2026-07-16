@@ -27,12 +27,9 @@ HTTPRequest::HTTPRequest() : _method(""), _path(""), _version("")
  * 
  * other: The HTTPRequest object to copy.
  */
-HTTPRequest::HTTPRequest(const HTTPRequest& other)
-	: _method(other._method),
-	  _path(other._path),
-	  _version(other._version),
-	  _headers(other._headers),
-	  _body(other._body)
+HTTPRequest::HTTPRequest(const HTTPRequest &other)
+	: _method(other._method), _path(other._path), _version(other._version),
+	  _headers(other._headers), _body(other._body)
 {
 	std::cout << BOLD_GREEN << "HTTPRequest copy constructor called" << RESET << std::endl;
 }
@@ -43,8 +40,10 @@ HTTPRequest::HTTPRequest(const HTTPRequest& other)
  * other: The HTTPRequest object to assign.
  * @return A reference to the assigned object.
  */
-HTTPRequest& HTTPRequest::operator=(const HTTPRequest& other) {
-	if (this != &other) {
+HTTPRequest &HTTPRequest::operator=(const HTTPRequest &other)
+{
+	if (this != &other)
+	{
 		_method = other._method;
 		_path = other._path;
 		_version = other._version;
@@ -68,7 +67,8 @@ HTTPRequest::~HTTPRequest()
  * 
  * @return A reference to the HTTP method string.
  */
-const std::string& HTTPRequest::getMethod() const {
+const std::string &HTTPRequest::getMethod() const
+{
 	return _method;
 }
 
@@ -77,7 +77,8 @@ const std::string& HTTPRequest::getMethod() const {
  * 
  * @return A reference to the path string.
  */
-const std::string& HTTPRequest::getPath() const {
+const std::string &HTTPRequest::getPath() const
+{
 	return _path;
 }
 
@@ -86,7 +87,8 @@ const std::string& HTTPRequest::getPath() const {
  * 
  * @return A reference to the HTTP version string.
  */
-const std::string& HTTPRequest::getVersion() const {
+const std::string &HTTPRequest::getVersion() const
+{
 	return _version;
 }
 
@@ -95,7 +97,8 @@ const std::string& HTTPRequest::getVersion() const {
  * 
  * @return A reference to the headers map.
  */
-const std::map<std::string, std::string>& HTTPRequest::getHeaders() const {
+const std::map<std::string, std::string> &HTTPRequest::getHeaders() const
+{
 	return _headers;
 }
 
@@ -104,7 +107,8 @@ const std::map<std::string, std::string>& HTTPRequest::getHeaders() const {
  * 
  * @return A reference to the body string.
  */
-const std::string& HTTPRequest::getBody() const {
+const std::string &HTTPRequest::getBody() const
+{
 	return _body;
 }
 
@@ -113,7 +117,8 @@ const std::string& HTTPRequest::getBody() const {
  * 
  * method: The HTTP method string to set.
  */
-void HTTPRequest::setMethod(const std::string& method) {
+void HTTPRequest::setMethod(const std::string &method)
+{
 	_method = method;
 }
 
@@ -122,7 +127,8 @@ void HTTPRequest::setMethod(const std::string& method) {
  *
  * path: The path string to set.
  */
-void HTTPRequest::setPath(const std::string& path) {
+void HTTPRequest::setPath(const std::string &path)
+{
 	_path = path;
 }
 
@@ -131,7 +137,8 @@ void HTTPRequest::setPath(const std::string& path) {
  *
  * version: The HTTP version string to set.
  */
-void HTTPRequest::setVersion(const std::string& version) {
+void HTTPRequest::setVersion(const std::string &version)
+{
 	_version = version;
 }
 
@@ -141,7 +148,8 @@ void HTTPRequest::setVersion(const std::string& version) {
  * key: The header key.
  * value: The header value.
  */
-void HTTPRequest::setHeader(const std::string& key, const std::string& value) {
+void HTTPRequest::setHeader(const std::string &key, const std::string &value)
+{
 	_headers[key] = value;
 }
 
@@ -150,6 +158,7 @@ void HTTPRequest::setHeader(const std::string& key, const std::string& value) {
  *
  * newBody: The new body string.
  */
-void HTTPRequest::setBody(const std::string& newBody) {
+void HTTPRequest::setBody(const std::string &newBody)
+{
 	_body = newBody;
 }

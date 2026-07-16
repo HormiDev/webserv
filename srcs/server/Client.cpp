@@ -29,13 +29,9 @@ Client::Client(int clientFd) : _fd(clientFd), _bytesSent(0), _keepAlive(false)
  * 
  * @param other The Client object to copy from.
  */
-Client::Client(const Client& other)
-	: _fd(other._fd),
-	  _recvBuffer(other._recvBuffer),
-	  _sendBuffer(other._sendBuffer),
-	  _bytesSent(other._bytesSent),
-	  _request(other._request),
-	  _response(other._response),
+Client::Client(const Client &other)
+	: _fd(other._fd), _recvBuffer(other._recvBuffer), _sendBuffer(other._sendBuffer),
+	  _bytesSent(other._bytesSent), _request(other._request), _response(other._response),
 	  _keepAlive(other._keepAlive)
 {
 	std::cout << BOLD_GREEN << "Client copy constructor called" << RESET << std::endl;
@@ -47,7 +43,7 @@ Client::Client(const Client& other)
  * @param other The Client object to assign from.
  * @return A reference to the assigned Client object.
  */
-Client& Client::operator=(const Client& other)
+Client &Client::operator=(const Client &other)
 {
 	if (this != &other)
 	{
@@ -86,7 +82,7 @@ int Client::getFd() const
  * 
  * @return A reference to the receive buffer string.
  */
-std::string& Client::getRecvBuffer()
+std::string &Client::getRecvBuffer()
 {
 	return _recvBuffer;
 }
@@ -96,7 +92,7 @@ std::string& Client::getRecvBuffer()
  * 
  * @return A const reference to the receive buffer string.
  */
-const std::string& Client::getRecvBuffer() const
+const std::string &Client::getRecvBuffer() const
 {
 	return _recvBuffer;
 }
@@ -106,7 +102,7 @@ const std::string& Client::getRecvBuffer() const
  * 
  * @return A reference to the send buffer string.
  */
-std::string& Client::getSendBuffer()
+std::string &Client::getSendBuffer()
 {
 	return _sendBuffer;
 }
@@ -116,7 +112,7 @@ std::string& Client::getSendBuffer()
  * 
  * @return A const reference to the send buffer string.
  */
-const std::string& Client::getSendBuffer() const
+const std::string &Client::getSendBuffer() const
 {
 	return _sendBuffer;
 }
@@ -136,7 +132,7 @@ size_t Client::getBytesSent() const
  * 
  * @return A reference to the HTTP request object.
  */
-HTTPRequest& Client::getRequest()
+HTTPRequest &Client::getRequest()
 {
 	return _request;
 }
@@ -146,7 +142,7 @@ HTTPRequest& Client::getRequest()
  * 
  * @return A const reference to the HTTP request object.
  */
-const HTTPRequest& Client::getRequest() const
+const HTTPRequest &Client::getRequest() const
 {
 	return _request;
 }
@@ -156,7 +152,7 @@ const HTTPRequest& Client::getRequest() const
  * 
  * @return A reference to the HTTP response object.
  */
-HTTPResponse& Client::getResponse()
+HTTPResponse &Client::getResponse()
 {
 	return _response;
 }
@@ -166,7 +162,7 @@ HTTPResponse& Client::getResponse()
  * 
  * @return A const reference to the HTTP response object.
  */
-const HTTPResponse& Client::getResponse() const
+const HTTPResponse &Client::getResponse() const
 {
 	return _response;
 }
