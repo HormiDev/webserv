@@ -6,7 +6,7 @@
 /*   By: mvidal-h <mvidal-h@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/03 15:28:35 by mvidal-h          #+#    #+#             */
-/*   Updated: 2026/07/14 14:57:07 by mvidal-h         ###   ########.fr       */
+/*   Updated: 2026/07/17 11:06:45 by mvidal-h         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,9 @@
  * port: Default port number (8080).
  * root: Default root directory ("./").
  * index: Default index file ("index.html").
+ * host: Default host ("0.0.0.0").
  */
-Config::Config() : _root("./"), _index("index.html"), _port(8080)
+Config::Config() : _root("./"), _index("index.html"), _host("0.0.0.0"), _port(8080)
 {
 	std::cout << BOLD_GREEN << "Config default constructor called" << RESET << std::endl;
 }
@@ -48,6 +49,7 @@ Config &Config::operator=(const Config &other)
 		_root = other._root;
 		_index = other._index;
 		_port = other._port;
+		_host = other._host;
 	}
 	std::cout << BOLD_GREEN << "Config assignment operator called" << RESET << std::endl;
 	return *this;
@@ -113,4 +115,34 @@ void Config::setIndex(const std::string &index)
 void Config::setPort(int port)
 {
 	_port = port;
+}
+
+/**
+ * Gets the host.
+ * @return The host.
+ */
+std::string Config::getHost() const
+{
+	return _host;
+}
+
+/**
+ * Sets the host.
+ * @param host The host.
+ */
+void Config::setHost(const std::string& host)
+{
+	_host = host;
+}
+
+/**
+ * Prints the configuration values.
+ */
+void Config::print() const
+{
+	std::cout << BOLD_GREEN << "Config values:" << RESET << std::endl;
+	std::cout << "  Root: " << _root << std::endl;
+	std::cout << "  Index: " << _index << std::endl;
+	std::cout << "  Port: " << _port << std::endl;
+	std::cout << "  Host: " << _host << std::endl;
 }

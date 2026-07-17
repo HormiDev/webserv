@@ -6,7 +6,7 @@
 /*   By: mvidal-h <mvidal-h@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/06 15:01:12 by mvidal-h          #+#    #+#             */
-/*   Updated: 2026/07/14 16:05:51 by mvidal-h         ###   ########.fr       */
+/*   Updated: 2026/07/17 11:09:26 by mvidal-h         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ ConfigParser &ConfigParser::operator=(const ConfigParser &other)
  */
 ConfigParser::~ConfigParser()
 {
-	std::cout << BOLD_GREEN << "ConfigParser destructor called" << RESET << std::endl;
+	std::cout << BOLD_RED << "ConfigParser destructor called" << RESET << std::endl;
 }
 
 /**
@@ -84,7 +84,7 @@ Config ConfigParser::parse(const std::string &filename)
 	buffer << configFile.rdbuf(); //Leemos todo el contenido del archivo en un stringstream
 	std::string fileContent = buffer.str();
 	std::string normalizedContent;
-	//En este bucle for se normaliza el contenido de filecontent (se agregan espacios alrededor de los tokens especiales
+	//En este bucle for se normaliza el contenido de filecontent (se agregan espacios alrededor de los tokens especiales)
 	//  "{"  "}" y ";" para que puedan ser tokenizados correctamente con el stringstream y el operador >>)
 	// Se normalizan porque podria aparecer tal que asi: "server{ port 8080;}" y eso no se tokenizaria correctamente, ya que el operador >> separa por espacios."
 	// Al final lo que queremos es que esten tal que asi: "server { port 8080 ; }"" para que se tokenice correctamente.
@@ -178,7 +178,7 @@ void ConfigParser::parseServer(Config &config)
 }
 
 /**
- * Parses the port directive.
+ * Parses the listen directive.
  * 
  * config: The Config object to initialize.
  */

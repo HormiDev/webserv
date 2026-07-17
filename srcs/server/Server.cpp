@@ -44,6 +44,7 @@ Server &Server::operator=(const Server &other)
 		_serverSocket = other._serverSocket;
 		_pollFds = other._pollFds;
 	}
+	std::cout << BOLD_GREEN << "Server assignment operator called" << RESET << std::endl;
 	return *this;
 }
 
@@ -53,6 +54,7 @@ Server &Server::operator=(const Server &other)
 Server::~Server()
 {
 	close(_serverSocket);
+	std::cout << BOLD_RED << "Server destructor called" << RESET << std::endl;
 }
 
 /**
@@ -87,7 +89,7 @@ void Server::createSocket()
 /**
  * Binds the server socket to the specified port and address.
  */
-void Server::bindSocket()
+void Server::bindSocket() //IMP: PROXIMO PASO cambiarlo para usar la funcion getaddrinfo()
 {
 	// struct sockaddr_in
 	// {

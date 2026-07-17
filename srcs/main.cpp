@@ -15,7 +15,6 @@ int main(int argc, char **argv)
 	{
 		ConfigParser configParser;
 		Config config = configParser.parse(argv[1]);
-
 		Server server(config);
 		server.start();
 	}
