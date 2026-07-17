@@ -16,12 +16,11 @@ int main(int argc, char **argv)
 		ConfigParser configParser;
 		Config config = configParser.parse(argv[1]);
 		config.print();
-	
+
 		Server server(config);
 		server.start();
-
 	}
-	catch (const std::exception& e)
+	catch (const std::exception &e)
 	{
 		std::cerr << BOLD_RED << "Error: " << e.what() << RESET << std::endl;
 		return 1;

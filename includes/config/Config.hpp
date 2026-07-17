@@ -19,29 +19,28 @@
 
 class Config
 {
-	public:
-					Config();
-					Config(const Config& other);
-		Config&		operator=(const Config& other);
-					~Config();
-		
-		int			getPort() const;
-		std::string	getRoot() const;
-		std::string	getIndex() const;
-		std::string	getHost() const;
-		void		setPort(int port);
-		void		setRoot(const std::string& root);
-		void		setIndex(const std::string& index);
-		void		setHost(const std::string& host);
+public:
+	Config();
+	Config(const Config &other);
+	Config &operator=(const Config &other);
+	~Config();
 
-		void		print() const;
+	int getPort() const;
+	std::string getRoot() const;
+	std::string getIndex() const;
+	std::string getHost() const;
+	void setPort(int port);
+	void setRoot(const std::string &root);
+	void setIndex(const std::string &index);
+	void setHost(const std::string &host);
 
-	private:
-		std::string	_root;
-		std::string	_index;
-		std::string _host;
-		int			_port;
+	void print() const;
 
+private:
+	std::string _root;
+	std::string _index;
+	std::string _host;
+	int _port;
 };
 
 #endif
