@@ -6,7 +6,7 @@
 /*   By: mvidal-h <mvidal-h@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/03 15:28:35 by mvidal-h          #+#    #+#             */
-/*   Updated: 2026/07/17 11:06:45 by mvidal-h         ###   ########.fr       */
+/*   Updated: 2026/07/16 17:12:47 by mvidal-h         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ Config::Config() : _root("./"), _index("index.html"), _host("0.0.0.0"), _port(80
  * Copy constructor for the Config class. Creates a new Config object as a copy
  * of another.
  */
-Config::Config(const Config &other) : _root(other._root), _index(other._index), _port(other._port)
+Config::Config(const Config& other) : _root(other._root), _index(other._index), _host(other._host), _port(other._port)
 {
 	std::cout << BOLD_GREEN << "Config copy constructor called" << RESET << std::endl;
 }
@@ -42,7 +42,7 @@ Config::Config(const Config &other) : _root(other._root), _index(other._index), 
  * Assignment operator for the Config class. Assigns values from another Config
  * object to this one.
  */
-Config &Config::operator=(const Config &other)
+Config& Config::operator=(const Config& other)
 {
 	if (this != &other)
 	{
@@ -94,7 +94,7 @@ int Config::getPort() const
  * Sets the root directory.
  * @param root The root directory.
  */
-void Config::setRoot(const std::string &root)
+void Config::setRoot(const std::string& root)
 {
 	_root = root;
 }
@@ -103,7 +103,7 @@ void Config::setRoot(const std::string &root)
  * Sets the index file.
  * @param index The index file.
  */
-void Config::setIndex(const std::string &index)
+void Config::setIndex(const std::string& index)
 {
 	_index = index;
 }
