@@ -5,6 +5,8 @@
 #include <sstream>		// std::ostringstream
 #include <sys/socket.h> // socket(), bind(), listen(), accept(), send(), recv()
 #include <netinet/in.h> // sockaddr_in, htons(), ntohs(), INADDR_ANY
+#include <netdb.h>		// getaddrinfo(), freeaddrinfo()
+#include <cstring>
 
 #include "server/Server.hpp"
 #include <arpa/inet.h> // inet_ntoa(), inet_ntop(), inet_pton(), inet_addr()
@@ -66,8 +68,10 @@ Server::~Server()
  */
 void Server::start()
 {
+	setupAddressInfo();
 	createSocket();
 	bindSocket();
+	freeAddressInfo(); // Free the address info after binding the socket to avoid memory leaks
 	listenSocket();
 
 	initPoll();
@@ -75,13 +79,50 @@ void Server::start()
 }
 
 /**
+ * Sets up the address information for the server socket.
+ */
+void Server::setupAddressInfo()
+{
+	addrinfo
+		hints; // Estructura que contiene información sobre el tipo de socket que queremos crear. La usamos para indicarle al sistema operativo qué tipo de socket queremos crear y cómo queremos que se comporte.
+	std::ostringstream portStream;
+
+	portStream << _config.getPort();
+	std::string port = portStream.str();
+
+	memset(&hints, 0, sizeof(hints));
+
+	hints.ai_family =
+		AF_INET; // AF_INET for IPv4, AF_INET6 for IPv6, AF_UNSPEC for any address family
+	hints.ai_socktype = SOCK_STREAM; // TCP socket
+	hints.ai_flags = AI_PASSIVE;	 // Socket will be used for binding, not for connect.
+
+	if (getaddrinfo(_config.getHost().c_str(), port.c_str(), &hints, &_addrInfo) !=
+		0) // (Parametros: host, port, hints(La receta de cómo queremos crear el socket), result (la estructura donde se guardará la info de la dirección. Mirar en http.md para entender la estructura addrinfo))
+	{
+		std::cerr << "Error getting address info" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+}
+
+/**
+ * Frees the address information for the server socket.
+ */
+void Server::freeAddressInfo()
+{
+	if (_addrInfo)
+	{
+		freeaddrinfo(_addrInfo);
+		_addrInfo = NULL;
+	}
+}
+
+/**
  * Creates the server socket.
  */
 void Server::createSocket()
 {
-	_serverSocket =
-		socket(AF_INET, SOCK_STREAM,
-			   0); // AF_INET for IPv4, SOCK_STREAM for TCP, AF_INET6 for IPv6, SOCK_DGRAM for UDP
+	_serverSocket = socket(_addrInfo->ai_family, _addrInfo->ai_socktype, _addrInfo->ai_protocol);
 	std::cout << "Socket descriptor: " << _serverSocket << std::endl;
 	if (_serverSocket == -1)
 	{
@@ -95,22 +136,7 @@ void Server::createSocket()
  */
 void Server::bindSocket() //IMP: PROXIMO PASO cambiarlo para usar la funcion getaddrinfo()
 {
-	// struct sockaddr_in
-	// {
-	// 	sa_family_t     sin_family;   // IPv4
-	// 	in_port_t       sin_port;     // puerto
-	// 	struct in_addr  sin_addr;     // IP
-	// };
-	struct sockaddr_in addr;
-
-	addr.sin_family = AF_INET; // IPv4
-	addr.sin_addr.s_addr =
-		INADDR_ANY; // Bind to all available interfaces: localhost(127.0.0.1), wi-fi, ethernet, etc.
-	addr.sin_port = htons(
-		_config
-			.getPort()); // Port number (htons = Host TO Network Short -> convert to network byte order)
-
-	if (bind(_serverSocket, (struct sockaddr *)&addr, sizeof(addr)) == -1)
+	if (bind(_serverSocket, _addrInfo->ai_addr, _addrInfo->ai_addrlen) == -1)
 	{
 		std::cerr << "Error binding socket" << std::endl;
 		exit(EXIT_FAILURE);
@@ -146,36 +172,13 @@ void Server::initPoll()
 
 	_pollFds.push_back(
 		serverPoll); // Agregamos el pollfd del servidor al vector de pollfd que vamos a pasar a la función poll(). De esta manera, el servidor estará escuchando nuevas conexiones entrantes en su socket.
-	// El vector _pollFds contendrá todos los pollfd que queremos escuchar: el del servidor y los de los clientes conectados. Cuando llamemos a poll(), el kernel nos dirá cuáles de estos pollfd tienen eventos pendientes (nuevas conexiones o datos para leer).
-	// Es como una lista de elementos a los que el poll estará atento y nos avisará cuando haya algo que atender.
+		// El vector _pollFds contendrá todos los pollfd que queremos escuchar: el del servidor y los de los clientes conectados. Cuando llamemos a poll(), el kernel nos dirá cuáles de estos pollfd tienen eventos pendientes (nuevas conexiones o datos para leer).
+		// Es como una lista de elementos a los que el poll estará atento y nos avisará cuando haya algo que atender.
 }
 
 /**
  * Main loop of the server that waits for events on the monitored file descriptors and handles them accordingly.
  */
-// void Server::runLoop()
-// {
-// 	while (true)
-// 	{
-// 		int pollCount = poll(_pollFds.data(), _pollFds.size(), -1); //Activamos el Poll para que empiece a escuchar los eventos. Parametros: array de pollfd, número de fds, timeout (-1 = infinito)
-// 		if (pollCount == -1)
-// 		{
-// 			std::cerr << "Error in poll()" << std::endl;
-// 			continue;
-// 		}
-// 		for (size_t i = 0; i < _pollFds.size(); ++i) //Cuando ocurre un evento en cualquiera de los elementos en los que esta escuchando el poll, se sale y tenemos que recorrerlos con el bucle pasando por todos (incluso los que no tienen eventos activos en su revent.)
-// 		{
-// 			if (_pollFds[i].revents & POLLIN) // Si el elemento tiene un evento pendiente (revents != 0) y ese evento es POLLIN (hay datos para leer o una nueva conexión entrante), entonces entramos en el if. EL & es un and bit a bit, porque el revent se maneja por bits para cada tipo de evento. Si el revent tiene el bit de POLLIN activado, significa que hay datos para leer o una nueva conexión entrante. Por eso se hace en & con el bit del POLLIN que nos asegura que, al menos el bit del POLLIN esta activo.
-// 			{
-// 				std::cout << "------------Event on fd: " << _pollFds[i].fd << std::endl;
-// 				if (_pollFds[i].fd == _serverSocket) //si el elemento es el propio servidor, significa que hay una nueva conexión entrante y tenemos que aceptarla. Si no, significa que es un cliente ya conectado y tenemos que leer los datos que nos envía.
-// 					acceptClient();
-// 				else								//si no es el servidor, significa que es un cliente ya conectado y tenemos que leer los datos que nos envía.
-// 					handleClient(_pollFds[i].fd);
-// 			}
-// 		}
-// 	}
-// }
 void Server::runLoop()
 {
 	while (true)

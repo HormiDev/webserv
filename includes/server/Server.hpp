@@ -13,12 +13,15 @@ class Server
 {
 private:
 	Config _config;
+	struct addrinfo *_addrInfo;
 	int _serverSocket;
 	std::vector<struct pollfd> _pollFds;
 	std::map<int, Client> _clients;
 	HTTPRequestParser _parser;
 
 	//Configuration and socket setup
+	void setupAddressInfo();
+	void freeAddressInfo();
 	void createSocket();
 	void bindSocket();
 	void listenSocket();
