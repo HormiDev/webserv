@@ -30,11 +30,9 @@ HTTPResponse::HTTPResponse() : _statusCode(200), _statusMessage("OK")
  * 
  * @param other The HTTPResponse object to copy from.
  */
-HTTPResponse::HTTPResponse(const HTTPResponse& other)
-	: _statusCode(other._statusCode),
-	  _statusMessage(other._statusMessage),
-	  _headers(other._headers),
-	  _body(other._body) 
+HTTPResponse::HTTPResponse(const HTTPResponse &other)
+	: _statusCode(other._statusCode), _statusMessage(other._statusMessage),
+	  _headers(other._headers), _body(other._body)
 {
 	std::cout << BOLD_GREEN << "HTTPResponse copy constructor called" << RESET << std::endl;
 }
@@ -45,7 +43,7 @@ HTTPResponse::HTTPResponse(const HTTPResponse& other)
  * @param other The HTTPResponse object to assign from.
  * @return A reference to the assigned HTTPResponse object.
  */
-HTTPResponse& HTTPResponse::operator=(const HTTPResponse& other)
+HTTPResponse &HTTPResponse::operator=(const HTTPResponse &other)
 {
 	if (this != &other)
 	{
@@ -81,7 +79,7 @@ int HTTPResponse::getStatusCode() const
  * 
  * @return The status message.
  */
-const std::string& HTTPResponse::getStatusMessage() const
+const std::string &HTTPResponse::getStatusMessage() const
 {
 	return _statusMessage;
 }
@@ -91,7 +89,7 @@ const std::string& HTTPResponse::getStatusMessage() const
  * 
  * @return A constant reference to the headers map.
  */
-const std::map<std::string, std::string>& HTTPResponse::getHeaders() const
+const std::map<std::string, std::string> &HTTPResponse::getHeaders() const
 {
 	return _headers;
 }
@@ -101,7 +99,7 @@ const std::map<std::string, std::string>& HTTPResponse::getHeaders() const
  * 
  * @return A constant reference to the body string.
  */
-const std::string& HTTPResponse::getBody() const
+const std::string &HTTPResponse::getBody() const
 {
 	return _body;
 }
@@ -121,7 +119,7 @@ void HTTPResponse::setStatusCode(int code)
  * 
  * @param message The new status message.
  */
-void HTTPResponse::setStatusMessage(const std::string& message)
+void HTTPResponse::setStatusMessage(const std::string &message)
 {
 	_statusMessage = message;
 }
@@ -132,7 +130,7 @@ void HTTPResponse::setStatusMessage(const std::string& message)
  * @param key The header key.
  * @param value The header value.
  */
-void HTTPResponse::setHeader(const std::string& key, const std::string& value)
+void HTTPResponse::setHeader(const std::string &key, const std::string &value)
 {
 	_headers[key] = value;
 }
@@ -142,7 +140,7 @@ void HTTPResponse::setHeader(const std::string& key, const std::string& value)
  * 
  * @param newBody The new body content.
  */
-void HTTPResponse::setBody(const std::string& newBody)
+void HTTPResponse::setBody(const std::string &newBody)
 {
 	_body = newBody;
 }
@@ -170,10 +168,7 @@ std::string HTTPResponse::serialize() const
 std::string HTTPResponse::serializeStatusLine() const
 {
 	std::ostringstream serializedStatusStream;
-	serializedStatusStream	<< "HTTP/1.1 " 
-							<< _statusCode 
-							<< " " << _statusMessage
-							<< "\r\n";
+	serializedStatusStream << "HTTP/1.1 " << _statusCode << " " << _statusMessage << "\r\n";
 	return serializedStatusStream.str();
 }
 
@@ -185,7 +180,8 @@ std::string HTTPResponse::serializeStatusLine() const
 std::string HTTPResponse::serializeHeaders() const
 {
 	std::ostringstream serializedHeadersStream;
-	for (std::map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
+	for (std::map<std::string, std::string>::const_iterator it = _headers.begin();
+		 it != _headers.end(); ++it)
 	{
 		serializedHeadersStream << it->first << ": " << it->second << "\r\n";
 	}

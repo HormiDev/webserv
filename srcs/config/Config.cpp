@@ -33,7 +33,9 @@ Config::Config() : _root("./"), _index("index.html"), _host("0.0.0.0"), _port(80
  * Copy constructor for the Config class. Creates a new Config object as a copy
  * of another.
  */
-Config::Config(const Config& other) : _root(other._root), _index(other._index), _host(other._host), _port(other._port), _errorPages(other._errorPages)
+Config::Config(const Config &other)
+	: _root(other._root), _index(other._index), _host(other._host), _port(other._port),
+	  _errorPages(other._errorPages)
 {
 	std::cout << BOLD_GREEN << "Config copy constructor called" << RESET << std::endl;
 }
@@ -42,7 +44,7 @@ Config::Config(const Config& other) : _root(other._root), _index(other._index), 
  * Assignment operator for the Config class. Assigns values from another Config
  * object to this one.
  */
-Config& Config::operator=(const Config& other)
+Config &Config::operator=(const Config &other)
 {
 	if (this != &other)
 	{
@@ -108,7 +110,7 @@ std::string Config::getErrorPage(int errorCode) const
  * Sets the root directory.
  * @param root The root directory.
  */
-void Config::setRoot(const std::string& root)
+void Config::setRoot(const std::string &root)
 {
 	_root = root;
 }
@@ -117,7 +119,7 @@ void Config::setRoot(const std::string& root)
  * Sets the index file.
  * @param index The index file.
  */
-void Config::setIndex(const std::string& index)
+void Config::setIndex(const std::string &index)
 {
 	_index = index;
 }
@@ -144,7 +146,7 @@ std::string Config::getHost() const
  * Sets the host.
  * @param host The host.
  */
-void Config::setHost(const std::string& host)
+void Config::setHost(const std::string &host)
 {
 	_host = host;
 }
@@ -154,7 +156,7 @@ void Config::setHost(const std::string& host)
  * @param errorCode The HTTP error code.
  * @param errorPagePath The path to the corresponding error page.
  */
-void Config::setErrorPage(int errorCode, const std::string& errorPagePath)
+void Config::setErrorPage(int errorCode, const std::string &errorPagePath)
 {
 	_errorPages.insert(std::make_pair(errorCode, errorPagePath));
 }
@@ -170,6 +172,7 @@ void Config::print() const
 	std::cout << "  Port: " << _port << std::endl;
 	std::cout << "  Host: " << _host << std::endl;
 	std::cout << "  Error Pages:" << std::endl;
-	for (std::map<int, std::string>::const_iterator it = _errorPages.begin(); it != _errorPages.end(); ++it)
+	for (std::map<int, std::string>::const_iterator it = _errorPages.begin();
+		 it != _errorPages.end(); ++it)
 		std::cout << "    " << it->first << ": " << it->second << std::endl;
 }

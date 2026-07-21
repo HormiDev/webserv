@@ -1,11 +1,11 @@
 #include <unistd.h> // close()
 #include <cstdlib>
 #include <iostream>
-#include <fstream> // std::ifstream
-#include <sstream> // std::ostringstream
+#include <fstream>		// std::ifstream
+#include <sstream>		// std::ostringstream
 #include <sys/socket.h> // socket(), bind(), listen(), accept(), send(), recv()
 #include <netinet/in.h> // sockaddr_in, htons(), ntohs(), INADDR_ANY
-#include <netdb.h> // getaddrinfo(), freeaddrinfo()
+#include <netdb.h>		// getaddrinfo(), freeaddrinfo()
 #include <cstring>
 
 #include "server/Server.hpp"
@@ -20,7 +20,7 @@
  * 
  * @param config The configuration object containing server settings.
  */
-Server::Server(const Config& config) : _config(config), _serverSocket(-1)
+Server::Server(const Config &config) : _config(config), _serverSocket(-1)
 {
 	std::cout << BOLD_GREEN << "Server constructor called" << RESET << std::endl;
 }
@@ -30,7 +30,8 @@ Server::Server(const Config& config) : _config(config), _serverSocket(-1)
  * 
  * @param other The Server object to copy from.
  */
-Server::Server(const Server& other) : _config(other._config), _serverSocket(other._serverSocket), _pollFds(other._pollFds)
+Server::Server(const Server &other)
+	: _config(other._config), _serverSocket(other._serverSocket), _pollFds(other._pollFds)
 {
 	std::cout << BOLD_GREEN << "Server copy constructor called" << RESET << std::endl;
 }
@@ -41,7 +42,7 @@ Server::Server(const Server& other) : _config(other._config), _serverSocket(othe
  * @param other The Server object to assign from.
  * @return A reference to the assigned Server object.
  */
-Server& Server::operator=(const Server& other)
+Server &Server::operator=(const Server &other)
 {
 	if (this != &other)
 	{
@@ -72,7 +73,7 @@ void Server::start()
 	bindSocket();
 	freeAddressInfo(); // Free the address info after binding the socket to avoid memory leaks
 	listenSocket();
-	
+
 	initPoll();
 	runLoop();
 }
@@ -82,7 +83,8 @@ void Server::start()
  */
 void Server::setupAddressInfo()
 {
-	addrinfo hints; // Estructura que contiene información sobre el tipo de socket que queremos crear. La usamos para indicarle al sistema operativo qué tipo de socket queremos crear y cómo queremos que se comporte.
+	addrinfo
+		hints; // Estructura que contiene información sobre el tipo de socket que queremos crear. La usamos para indicarle al sistema operativo qué tipo de socket queremos crear y cómo queremos que se comporte.
 	std::ostringstream portStream;
 
 	portStream << _config.getPort();
@@ -90,11 +92,13 @@ void Server::setupAddressInfo()
 
 	memset(&hints, 0, sizeof(hints));
 
-	hints.ai_family = AF_INET; // AF_INET for IPv4, AF_INET6 for IPv6, AF_UNSPEC for any address family
+	hints.ai_family =
+		AF_INET; // AF_INET for IPv4, AF_INET6 for IPv6, AF_UNSPEC for any address family
 	hints.ai_socktype = SOCK_STREAM; // TCP socket
-	hints.ai_flags = AI_PASSIVE; // Socket will be used for binding
+	hints.ai_flags = AI_PASSIVE;	 // Socket will be used for binding
 
-	if (getaddrinfo(_config.getHost().c_str(), port.c_str(), &hints, &_addrInfo) != 0) // (Parametros: host, port, hints(La receta de cómo queremos crear el socket), result (la estructura donde se guardará la info de la dirección. Mirar en http.md para entender la estructura addrinfo)) 
+	if (getaddrinfo(_config.getHost().c_str(), port.c_str(), &hints, &_addrInfo) !=
+		0) // (Parametros: host, port, hints(La receta de cómo queremos crear el socket), result (la estructura donde se guardará la info de la dirección. Mirar en http.md para entender la estructura addrinfo))
 	{
 		std::cerr << "Error getting address info" << std::endl;
 		exit(EXIT_FAILURE);
@@ -158,14 +162,18 @@ void Server::listenSocket()
  */
 void Server::initPoll()
 {
-	struct pollfd serverPoll; //Un pollfd es una estructura (ya existente en la libreria poll.h) que contiene un descriptor de archivo (fd), los eventos que queremos escuchar (events) y los eventos que han ocurrido (revents).
+	struct pollfd
+		serverPoll; //Un pollfd es una estructura (ya existente en la libreria poll.h) que contiene un descriptor de archivo (fd), los eventos que queremos escuchar (events) y los eventos que han ocurrido (revents).
 	serverPoll.fd = _serverSocket;
-	serverPoll.events = POLLIN; // En este caso, vamos a escuchar el socket del servidor para ver si hay nuevas conexiones entrantes (POLLIN). Solo se activara si hay una nueva conexion entrante, no si hay datos para leer de un cliente ya conectado.
-	serverPoll.revents = 0; // Revents se inicializa a 0 porque aún no han ocurrido eventos. El kernel marcará el revents con el evento que haya ocurrido (si es que ocurre alguno) cuando llamemos a poll().
+	serverPoll.events =
+		POLLIN; // En este caso, vamos a escuchar el socket del servidor para ver si hay nuevas conexiones entrantes (POLLIN). Solo se activara si hay una nueva conexion entrante, no si hay datos para leer de un cliente ya conectado.
+	serverPoll.revents =
+		0; // Revents se inicializa a 0 porque aún no han ocurrido eventos. El kernel marcará el revents con el evento que haya ocurrido (si es que ocurre alguno) cuando llamemos a poll().
 
-	_pollFds.push_back(serverPoll); // Agregamos el pollfd del servidor al vector de pollfd que vamos a pasar a la función poll(). De esta manera, el servidor estará escuchando nuevas conexiones entrantes en su socket.
-									// El vector _pollFds contendrá todos los pollfd que queremos escuchar: el del servidor y los de los clientes conectados. Cuando llamemos a poll(), el kernel nos dirá cuáles de estos pollfd tienen eventos pendientes (nuevas conexiones o datos para leer).
-									// Es como una lista de elementos a los que el poll estará atento y nos avisará cuando haya algo que atender.
+	_pollFds.push_back(
+		serverPoll); // Agregamos el pollfd del servidor al vector de pollfd que vamos a pasar a la función poll(). De esta manera, el servidor estará escuchando nuevas conexiones entrantes en su socket.
+		// El vector _pollFds contendrá todos los pollfd que queremos escuchar: el del servidor y los de los clientes conectados. Cuando llamemos a poll(), el kernel nos dirá cuáles de estos pollfd tienen eventos pendientes (nuevas conexiones o datos para leer).
+		// Es como una lista de elementos a los que el poll estará atento y nos avisará cuando haya algo que atender.
 }
 
 /**
@@ -175,31 +183,40 @@ void Server::runLoop()
 {
 	while (true)
 	{
-		int pollCount = poll(_pollFds.data(), _pollFds.size(), -1); //Activamos el Poll para que empiece a escuchar los eventos. Parametros: array de pollfd, número de fds, timeout (-1 = infinito)
+		int pollCount = poll(
+			_pollFds.data(), _pollFds.size(),
+			-1); //Activamos el Poll para que empiece a escuchar los eventos. Parametros: array de pollfd, número de fds, timeout (-1 = infinito)
 		if (pollCount == -1)
 		{
 			std::cerr << "Error in poll()" << std::endl;
 			continue;
 		}
-		for (size_t i = 0; i < _pollFds.size(); ++i) //Cuando ocurre un evento en cualquiera de los elementos en los que esta escuchando el poll, se sale y tenemos que recorrerlos con el bucle pasando por todos (incluso los que no tienen eventos activos en su revent.)
+		for (
+			size_t i = 0; i < _pollFds.size();
+			++i) //Cuando ocurre un evento en cualquiera de los elementos en los que esta escuchando el poll, se sale y tenemos que recorrerlos con el bucle pasando por todos (incluso los que no tienen eventos activos en su revent.)
 		{
-			struct pollfd& pfd = _pollFds[i];
+			struct pollfd &pfd = _pollFds[i];
 			if (pfd.fd == _serverSocket)
 			{
-				if (pfd.revents & POLLIN) // Si el elemento es el propio servidor y tiene un evento pendiente (revents != 0) y ese evento es POLLIN (una nueva conexión entrante). EL & es un and bit a bit, porque el revent se maneja por bits para cada tipo de evento. Si el revent tiene el bit de POLLIN activado, significa que hay datos para leer o una nueva conexión entrante. Por eso se hace en & con el bit del POLLIN que nos asegura que, al menos el bit del POLLIN esta activo.
+				if (pfd.revents &
+					POLLIN) // Si el elemento es el propio servidor y tiene un evento pendiente (revents != 0) y ese evento es POLLIN (una nueva conexión entrante). EL & es un and bit a bit, porque el revent se maneja por bits para cada tipo de evento. Si el revent tiene el bit de POLLIN activado, significa que hay datos para leer o una nueva conexión entrante. Por eso se hace en & con el bit del POLLIN que nos asegura que, al menos el bit del POLLIN esta activo.
 				{
 					acceptClient();
 					continue;
 				}
 			}
-			if (pfd.revents & (POLLHUP | POLLERR | POLLNVAL)) // Si el cliente se ha desconectado, ha ocurrido un error o el descriptor de archivo es inválido, lo desconectamos.
+			if (pfd.revents &
+				(POLLHUP | POLLERR |
+				 POLLNVAL)) // Si el cliente se ha desconectado, ha ocurrido un error o el descriptor de archivo es inválido, lo desconectamos.
 			{
 				disconnectClient(pfd.fd);
 				continue;
 			}
-			if (pfd.revents & POLLIN) //  El socket del cliente tiene datos disponibles para ser leídos mediante recv().
+			if (pfd.revents &
+				POLLIN) //  El socket del cliente tiene datos disponibles para ser leídos mediante recv().
 				readFromClient(pfd.fd);
-			if (pfd.revents & POLLOUT) // El socket está listo para enviar datos al cliente mediante send().
+			if (pfd.revents &
+				POLLOUT) // El socket está listo para enviar datos al cliente mediante send().
 				writeToClient(pfd.fd);
 		}
 	}
@@ -218,7 +235,7 @@ void Server::setPollEvent(int clientSocket, short events)
 		if (_pollFds[i].fd == clientSocket)
 		{
 			_pollFds[i].events = events;
-			return ;
+			return;
 		}
 	}
 }
@@ -235,11 +252,13 @@ void Server::acceptClient()
 	if (clientSocket == -1)
 	{
 		std::cerr << "Error accepting client connection" << std::endl;
-		return ;
+		return;
 	}
-	std::cout << "New client connected: " << inet_ntoa(clientAddr.sin_addr) << ":" << ntohs(clientAddr.sin_port) << std::endl;
+	std::cout << "New client connected: " << inet_ntoa(clientAddr.sin_addr) << ":"
+			  << ntohs(clientAddr.sin_port) << std::endl;
 
-	struct pollfd clientPoll; //Creamos un nuevo pollfd para el cliente que acabamos de aceptar. Este pollfd nos permitirá escuchar los eventos que ocurran en el socket del cliente, como datos entrantes (POLLIN) o desconexión (POLLHUP).
+	struct pollfd
+		clientPoll; //Creamos un nuevo pollfd para el cliente que acabamos de aceptar. Este pollfd nos permitirá escuchar los eventos que ocurran en el socket del cliente, como datos entrantes (POLLIN) o desconexión (POLLHUP).
 
 	clientPoll.fd = clientSocket;
 	clientPoll.events = POLLIN; // Wait for incoming data from the client
@@ -257,10 +276,11 @@ void Server::acceptClient()
 void Server::readFromClient(int clientSocket)
 {
 	char buffer[4096];
-	Client& client = getClient(clientSocket);
+	Client &client = getClient(clientSocket);
 	HTTPRequestParser parser;
 
-	ssize_t bytes = recv(clientSocket, buffer, sizeof(buffer) - 1, 0); //Leemos lo que nos envia el cliente
+	ssize_t bytes =
+		recv(clientSocket, buffer, sizeof(buffer) - 1, 0); //Leemos lo que nos envia el cliente
 	// bytes > 0: data received, bytes == 0: client disconnected in a good way, bytes < 0: error
 	if (bytes == 0)
 	{
@@ -275,19 +295,31 @@ void Server::readFromClient(int clientSocket)
 		return;
 	}
 	buffer[bytes] = '\0';
-	std::cout << "Request: " << buffer << std::endl; //Linea para mostrar por pantalla la peticion y poder entenderla. IMP: luego podemos quitarla.
-	client.getRecvBuffer().append(buffer, bytes); //Añadimos lo que hemos leido al buffer de recepcion del cliente. Esto es importante porque el cliente puede enviar la peticion en varios paquetes y tenemos que ir acumulando todo hasta tener la peticion completa.
+	std::cout
+		<< "Request: " << buffer
+		<< std::
+			   endl; //Linea para mostrar por pantalla la peticion y poder entenderla. IMP: luego podemos quitarla.
+	client.getRecvBuffer().append(
+		buffer,
+		bytes); //Añadimos lo que hemos leido al buffer de recepcion del cliente. Esto es importante porque el cliente puede enviar la peticion en varios paquetes y tenemos que ir acumulando todo hasta tener la peticion completa.
 
-	if (!parser.isRequestComplete(client.getRecvBuffer())) //Si la peticion no esta completa, salimos y esperamos a que llegue el resto de la peticion. Esto es importante porque el cliente puede enviar la peticion en varios paquetes y tenemos que ir acumulando todo hasta tener la peticion completa.
+	if (!parser.isRequestComplete(
+			client
+				.getRecvBuffer())) //Si la peticion no esta completa, salimos y esperamos a que llegue el resto de la peticion. Esto es importante porque el cliente puede enviar la peticion en varios paquetes y tenemos que ir acumulando todo hasta tener la peticion completa.
 	{
 		std::cout << "Request not complete yet." << std::endl;
-		return ;
+		return;
 	}
 	std::cout << "Request complete." << std::endl;
-	std::cout << "Request complete: " << client.getRecvBuffer() << std::endl; //Linea para mostrar por pantalla la peticion y poder entenderla. IMP: luego podemos quitarla.
+	std::cout
+		<< "Request complete: " << client.getRecvBuffer()
+		<< std::
+			   endl; //Linea para mostrar por pantalla la peticion y poder entenderla. IMP: luego podemos quitarla.
 	try
 	{
-		HTTPRequest request = parser.parse(client.getRecvBuffer()); //Parseamos la peticion que hemos obtenido con el recv y la convertimos en un objeto HTTPRequest que nos permite acceder a los diferentes elementos de la peticion (metodo, path, version, headers, body)
+		HTTPRequest request = parser.parse(
+			client
+				.getRecvBuffer()); //Parseamos la peticion que hemos obtenido con el recv y la convertimos en un objeto HTTPRequest que nos permite acceder a los diferentes elementos de la peticion (metodo, path, version, headers, body)
 		//IMP: QUITAR ESTO DESPUÉS DE HACER PRUEBAS
 		// std::cout << "Parsed request: " << std::endl;
 		// std::cout << "Method: " << request.getMethod() << std::endl;
@@ -299,13 +331,19 @@ void Server::readFromClient(int clientSocket)
 		// std::cout << "Body: " << request.getBody() << std::endl;
 		//IMP: QUITAR ESTO DESPUÉS DE HACER PRUEBAS
 
-		client.getResponse() = handleRequest(request); //Manejamos la peticion y generamos la respuesta correspondiente. Esto implica leer el fichero solicitado, generar la cabecera de la respuesta y el cuerpo de la respuesta.
-		client.getSendBuffer() = client.getResponse().serialize(); //Serializamos la respuesta y la añadimos al buffer de envio del cliente. Esto es importante porque el cliente puede enviar la respuesta en varios paquetes y tenemos que ir enviando todo hasta que se haya enviado toda la respuesta.
-		setPollEvent(clientSocket, POLLOUT); // Cambiamos el evento a POLLOUT para que el poll nos avise cuando el socket del cliente esté listo para que le enviemos datos.
+		client.getResponse() = handleRequest(
+			request); //Manejamos la peticion y generamos la respuesta correspondiente. Esto implica leer el fichero solicitado, generar la cabecera de la respuesta y el cuerpo de la respuesta.
+		client.getSendBuffer() =
+			client.getResponse()
+				.serialize(); //Serializamos la respuesta y la añadimos al buffer de envio del cliente. Esto es importante porque el cliente puede enviar la respuesta en varios paquetes y tenemos que ir enviando todo hasta que se haya enviado toda la respuesta.
+		setPollEvent(
+			clientSocket,
+			POLLOUT); // Cambiamos el evento a POLLOUT para que el poll nos avise cuando el socket del cliente esté listo para que le enviemos datos.
 	}
-	catch (const HTTPException& e)
+	catch (const HTTPException &e)
 	{
-		client.getResponse() = createErrorResponse(static_cast<HttpStatus>(e.getStatusCode())); // Si ocurre una excepción HTTP (por ejemplo, un error de parseo de la solicitud), generamos una respuesta de error correspondiente y la enviamos al cliente. Luego tendremos que mejorarlo con las paginas de error personalizadas que nos indicara en archivo de configuracion.
+		client.getResponse() = createErrorResponse(static_cast<HttpStatus>(
+			e.getStatusCode())); // Si ocurre una excepción HTTP (por ejemplo, un error de parseo de la solicitud), generamos una respuesta de error correspondiente y la enviamos al cliente. Luego tendremos que mejorarlo con las paginas de error personalizadas que nos indicara en archivo de configuracion.
 		client.getSendBuffer() = client.getResponse().serialize();
 		setPollEvent(clientSocket, POLLOUT);
 		return;
@@ -314,21 +352,23 @@ void Server::readFromClient(int clientSocket)
 
 void Server::writeToClient(int clientSocket)
 {
-	Client& client = getClient(clientSocket);
-	std::string& sendBuffer = client.getSendBuffer();
+	Client &client = getClient(clientSocket);
+	std::string &sendBuffer = client.getSendBuffer();
 
-	ssize_t bytesSent = send(clientSocket, sendBuffer.c_str() + client.getBytesSent(), sendBuffer.size() - client.getBytesSent(), 0);
+	ssize_t bytesSent = send(clientSocket, sendBuffer.c_str() + client.getBytesSent(),
+							 sendBuffer.size() - client.getBytesSent(), 0);
 	if (bytesSent < 0)
 	{
 		disconnectClient(clientSocket);
 		return;
 	}
 	client.addBytesSent(bytesSent);
-	std::cout << "Sent " << bytesSent << " total to " << sendBuffer.size() << " bytes to client." << std::endl;
+	std::cout << "Sent " << bytesSent << " total to " << sendBuffer.size() << " bytes to client."
+			  << std::endl;
 	if (client.getBytesSent() < sendBuffer.size())
 	{
 		std::cout << "Response not fully sended yet." << std::endl;
-		return ;
+		return;
 	}
 	if (client.isKeepAlive())
 	{
@@ -345,7 +385,7 @@ void Server::writeToClient(int clientSocket)
  * @param clientSocket The socket connected to the client.
  * @return A reference to the client object.
  */
-Client& Server::getClient(int clientSocket)
+Client &Server::getClient(int clientSocket)
 {
 	std::map<int, Client>::iterator it = _clients.find(clientSocket);
 	if (it == _clients.end())
@@ -378,10 +418,11 @@ void Server::disconnectClient(int clientSocket)
  * @param request The HTTP request to handle.
  * @return The HTTP response to send.
  */
-HTTPResponse Server::handleRequest(const HTTPRequest& request)
+HTTPResponse Server::handleRequest(const HTTPRequest &request)
 {
 	std::string srcPath;
-	if (request.getPath() == "/") // calcula donde esta la pagina html a decolver segun los parametros parseados del archivo conf.
+	if (request.getPath() ==
+		"/") // calcula donde esta la pagina html a decolver segun los parametros parseados del archivo conf.
 		srcPath = _config.getRoot() + "/" + _config.getIndex(); // el index por defecto
 	else
 		srcPath = _config.getRoot() + request.getPath(); // la pagina solicitada
@@ -406,14 +447,15 @@ HTTPResponse Server::handleRequest(const HTTPRequest& request)
  * @param body The body content of the response.
  * @return The created HTTP response.
  */
-HTTPResponse Server::createResponse(HttpStatus statusCode, const std::string& contentType, const std::string& body)
+HTTPResponse Server::createResponse(HttpStatus statusCode, const std::string &contentType,
+									const std::string &body)
 {
 	HTTPResponse response;
 	std::string statusMessage = getStatusMessage(statusCode);
-	
+
 	std::ostringstream lengthstream;
 	lengthstream << body.length();
-	
+
 	response.setStatusCode(statusCode);
 	response.setStatusMessage(statusMessage);
 	response.setHeader("Content-Type", contentType);
@@ -435,7 +477,8 @@ HTTPResponse Server::createErrorResponse(HttpStatus statusCode)
 	std::ostringstream bodystream;
 
 	std::ifstream error_file_stream(errorPagePathStream.str().c_str());
-	if (!error_file_stream.is_open()) // si no puede abrir el fichero o no existe, devolvemos un error 404
+	if (!error_file_stream
+			 .is_open()) // si no puede abrir el fichero o no existe, devolvemos un error 404
 	{
 		bodystream << statusCode << " " << getStatusMessage(statusCode);
 		std::string body = bodystream.str();
