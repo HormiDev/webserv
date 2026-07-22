@@ -20,6 +20,7 @@ CUT			=	\033[K
 #source files
 SRC_FILES	=	main.cpp \
 				server/Server.cpp \
+				server/ServerSocket.cpp \
 				server/Client.cpp \
 				config/Config.cpp \
 				config/ConfigParser.cpp \
