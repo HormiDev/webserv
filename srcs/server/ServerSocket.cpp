@@ -11,9 +11,9 @@
 /* ************************************************************************** */
 
 #include <unistd.h> // close()
-#include <sstream> // std::ostringstream
-#include <cstdlib> // exit()
-#include <netdb.h> // getaddrinfo(), freeaddrinfo()
+#include <sstream>	// std::ostringstream
+#include <cstdlib>	// exit()
+#include <netdb.h>	// getaddrinfo(), freeaddrinfo()
 
 #include "server/ServerSocket.hpp"
 #include <cstring>
@@ -23,7 +23,8 @@
  *
  * @param config The configuration object containing server settings.
  */
-ServerSocket::ServerSocket(const Config& config) : _config(config), _addrInfo(NULL), _serverSocketFd(-1)
+ServerSocket::ServerSocket(const Config &config)
+	: _config(config), _addrInfo(NULL), _serverSocketFd(-1)
 {
 	std::cout << BOLD_GREEN << "ServerSocket constructor called" << RESET << std::endl;
 }
@@ -33,7 +34,8 @@ ServerSocket::ServerSocket(const Config& config) : _config(config), _addrInfo(NU
  *
  * @param other The ServerSocket object to copy from.
  */
-ServerSocket::ServerSocket(const ServerSocket& other) : _config(other._config), _addrInfo(other._addrInfo), _serverSocketFd(other._serverSocketFd)
+ServerSocket::ServerSocket(const ServerSocket &other)
+	: _config(other._config), _addrInfo(other._addrInfo), _serverSocketFd(other._serverSocketFd)
 {
 	std::cout << BOLD_GREEN << "ServerSocket copy constructor called" << RESET << std::endl;
 }
@@ -44,7 +46,7 @@ ServerSocket::ServerSocket(const ServerSocket& other) : _config(other._config), 
  * @param other The ServerSocket object to assign from.
  * @return A reference to the assigned ServerSocket object.
  */
-ServerSocket& ServerSocket::operator=(const ServerSocket& other)
+ServerSocket &ServerSocket::operator=(const ServerSocket &other)
 {
 	if (this != &other)
 	{
@@ -66,13 +68,13 @@ ServerSocket::~ServerSocket()
 	std::cout << BOLD_RED << "ServerSocket destructor called" << RESET << std::endl;
 }
 
-
 /**
  * Sets up the address information for the server socket.
  */
 void ServerSocket::setupAddressInfo()
 {
-	addrinfo hints; // Estructura que contiene información sobre el tipo de socket que queremos crear. La usamos para indicarle al sistema operativo qué tipo de socket queremos crear y cómo queremos que se comporte.
+	addrinfo
+		hints; // Estructura que contiene información sobre el tipo de socket que queremos crear. La usamos para indicarle al sistema operativo qué tipo de socket queremos crear y cómo queremos que se comporte.
 	std::ostringstream portStream;
 
 	portStream << _config.getPort();
@@ -80,11 +82,13 @@ void ServerSocket::setupAddressInfo()
 
 	memset(&hints, 0, sizeof(hints));
 
-	hints.ai_family = AF_INET; // AF_INET for IPv4, AF_INET6 for IPv6, AF_UNSPEC for any address family
+	hints.ai_family =
+		AF_INET; // AF_INET for IPv4, AF_INET6 for IPv6, AF_UNSPEC for any address family
 	hints.ai_socktype = SOCK_STREAM; // TCP socket
-	hints.ai_flags = AI_PASSIVE; // Socket will be used for binding
+	hints.ai_flags = AI_PASSIVE;	 // Socket will be used for binding
 
-	if (getaddrinfo(_config.getHost().c_str(), port.c_str(), &hints, &_addrInfo) != 0) // (Parametros: host, port, hints(La receta de cómo queremos crear el socket), result (la estructura donde se guardará la info de la dirección. Mirar en http.md para entender la estructura addrinfo)) 
+	if (getaddrinfo(_config.getHost().c_str(), port.c_str(), &hints, &_addrInfo) !=
+		0) // (Parametros: host, port, hints(La receta de cómo queremos crear el socket), result (la estructura donde se guardará la info de la dirección. Mirar en http.md para entender la estructura addrinfo))
 	{
 		std::cerr << "Error getting address info" << std::endl;
 		exit(EXIT_FAILURE);
@@ -109,7 +113,10 @@ void ServerSocket::freeAddressInfo()
 void ServerSocket::createSocket()
 {
 	_serverSocketFd = socket(_addrInfo->ai_family, _addrInfo->ai_socktype, _addrInfo->ai_protocol);
-	std::cout << "Socket descriptor: " << _serverSocketFd << std::endl; //IMP: Se podria borrar. solo era para debugueary entender bien el flujo de la creacion del socket.
+	std::cout
+		<< "Socket descriptor: " << _serverSocketFd
+		<< std::
+			   endl; //IMP: Se podria borrar. solo era para debugueary entender bien el flujo de la creacion del socket.
 	if (_serverSocketFd == -1)
 	{
 		std::cerr << "Error creating socket" << std::endl;
@@ -135,7 +142,8 @@ void ServerSocket::bindSocket()
  */
 void ServerSocket::listenSocket()
 {
-	if (listen(_serverSocketFd, SOMAXCONN) == -1) //IMP: no se si aqui ira SOMAXCONN o un numero fijo de conexiones pendientes. SOMAXCONN es una constante que representa el número máximo de conexiones pendientes que el sistema operativo permite para un socket. Usar SOMAXCONN permite que el sistema operativo determine automáticamente un valor adecuado basado en sus propias limitaciones y configuraciones internas. Esto es útil porque garantiza que el servidor pueda manejar tantas conexiones como sea posible sin exceder los límites del sistema.
+	if (listen(_serverSocketFd, SOMAXCONN) ==
+		-1) //IMP: no se si aqui ira SOMAXCONN o un numero fijo de conexiones pendientes. SOMAXCONN es una constante que representa el número máximo de conexiones pendientes que el sistema operativo permite para un socket. Usar SOMAXCONN permite que el sistema operativo determine automáticamente un valor adecuado basado en sus propias limitaciones y configuraciones internas. Esto es útil porque garantiza que el servidor pueda manejar tantas conexiones como sea posible sin exceder los límites del sistema.
 	{
 		std::cerr << "Error listening on socket" << std::endl;
 		exit(EXIT_FAILURE);
@@ -158,7 +166,7 @@ int ServerSocket::getFd() const
  *
  * @return A reference to the configuration object.
  */
-const Config& ServerSocket::getConfig() const
+const Config &ServerSocket::getConfig() const
 {
 	return _config;
 }

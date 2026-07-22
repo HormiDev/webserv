@@ -17,29 +17,29 @@
 
 class ServerSocket
 {
-	private:
-		Config						_config;
-		struct addrinfo				*_addrInfo;
-		int							_serverSocketFd;
+private:
+	Config _config;
+	struct addrinfo *_addrInfo;
+	int _serverSocketFd;
 
-		//Configuration and socket setup
-		void 			setupAddressInfo();
-		void			freeAddressInfo();
-		void 			createSocket();
-		void 			bindSocket();
-		void 			listenSocket();
+	//Configuration and socket setup
+	void setupAddressInfo();
+	void freeAddressInfo();
+	void createSocket();
+	void bindSocket();
+	void listenSocket();
 
-	public:
-		ServerSocket(const Config& config);
-		ServerSocket(const ServerSocket& other);
-		ServerSocket& operator=(const ServerSocket& other);
-		~ServerSocket();
+public:
+	ServerSocket(const Config &config);
+	ServerSocket(const ServerSocket &other);
+	ServerSocket &operator=(const ServerSocket &other);
+	~ServerSocket();
 
-		//getters
-		int 			getFd() const;
-		const Config&	getConfig() const;
+	//getters
+	int getFd() const;
+	const Config &getConfig() const;
 
-		void			startServerSocket();
+	void startServerSocket();
 };
 
 #endif // SERVER_SOCKET_HPP
