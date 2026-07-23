@@ -172,8 +172,8 @@ void Server::initPoll()
 
 	_pollFds.push_back(
 		serverPoll); // Agregamos el pollfd del servidor al vector de pollfd que vamos a pasar a la función poll(). De esta manera, el servidor estará escuchando nuevas conexiones entrantes en su socket.
-		// El vector _pollFds contendrá todos los pollfd que queremos escuchar: el del servidor y los de los clientes conectados. Cuando llamemos a poll(), el kernel nos dirá cuáles de estos pollfd tienen eventos pendientes (nuevas conexiones o datos para leer).
-		// Es como una lista de elementos a los que el poll estará atento y nos avisará cuando haya algo que atender.
+	// El vector _pollFds contendrá todos los pollfd que queremos escuchar: el del servidor y los de los clientes conectados. Cuando llamemos a poll(), el kernel nos dirá cuáles de estos pollfd tienen eventos pendientes (nuevas conexiones o datos para leer).
+	// Es como una lista de elementos a los que el poll estará atento y nos avisará cuando haya algo que atender.
 }
 
 /**
