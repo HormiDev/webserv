@@ -9,8 +9,7 @@
 #include <cstdlib>
 
 CgiHandler::CgiHandler()
-	: _state(NOT_STARTED), _pid(-1), _stdinFd(-1), _stdoutFd(-1),
-	  _bodyBytesSent(0), _startTime(0)
+	: _state(NOT_STARTED), _pid(-1), _stdinFd(-1), _stdoutFd(-1), _bodyBytesSent(0), _startTime(0)
 {
 }
 
@@ -27,7 +26,7 @@ CgiHandler::~CgiHandler()
  */
 bool CgiHandler::start(const Request &request, const std::string &interpreterPath)
 {
-	int inPipe[2];  // padre escribe -> hijo lee (stdin del hijo)
+	int inPipe[2];	// padre escribe -> hijo lee (stdin del hijo)
 	int outPipe[2]; // hijo escribe -> padre lee (stdout del hijo)
 
 	if (pipe(inPipe) == -1)
@@ -267,8 +266,8 @@ std::vector<std::string> CgiHandler::buildEnv(const Request &request) const
 	std::vector<std::string> env;
 
 	env.push_back("GATEWAY_INTERFACE=CGI/1.1");
-	env.push_back("SERVER_PROTOCOL=" +
-				  (request.serverProtocol.empty() ? std::string("HTTP/1.1") : request.serverProtocol));
+	env.push_back("SERVER_PROTOCOL=" + (request.serverProtocol.empty() ? std::string("HTTP/1.1")
+																	   : request.serverProtocol));
 	env.push_back("REQUEST_METHOD=" + request.method);
 	env.push_back("SCRIPT_NAME=" + request.scriptPath);
 	env.push_back("PATH_INFO=" + request.pathInfo);
@@ -323,9 +322,8 @@ char **CgiHandler::envToArgv(const std::vector<std::string> &env) const
  * y el body. Si el script no imprime ninguna cabecera, todo se trata
  * como body (esto es valido segun el subject).
  */
-bool CgiHandler::splitOutput(const std::string &raw,
-							  std::map<std::string, std::string> &headers,
-							  std::string &body)
+bool CgiHandler::splitOutput(const std::string &raw, std::map<std::string, std::string> &headers,
+							 std::string &body)
 {
 	size_t headerEnd = raw.find("\r\n\r\n");
 	size_t separatorLen = 4;

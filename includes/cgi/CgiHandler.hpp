@@ -44,14 +44,14 @@ public:
 	// Cuando se integre, esto se rellena a partir de esas clases reales.
 	struct Request
 	{
-		std::string method;         // GET, POST, DELETE...
-		std::string scriptPath;     // ruta absoluta o relativa al script en disco
-		std::string pathInfo;       // parte de la URL despues del script
-		std::string queryString;    // lo que va tras el '?'
-		std::string serverProtocol; // "HTTP/1.1" si vacio se asume ese valor
-		std::string remoteAddr;     // ip del cliente
-		std::string contentType;    // Content-Type del body, si lo hay
-		std::string body;           // body completo, ya des-chunkeado si aplica
+		std::string method;							// GET, POST, DELETE...
+		std::string scriptPath;						// ruta absoluta o relativa al script en disco
+		std::string pathInfo;						// parte de la URL despues del script
+		std::string queryString;					// lo que va tras el '?'
+		std::string serverProtocol;					// "HTTP/1.1" si vacio se asume ese valor
+		std::string remoteAddr;						// ip del cliente
+		std::string contentType;					// Content-Type del body, si lo hay
+		std::string body;							// body completo, ya des-chunkeado si aplica
 		std::map<std::string, std::string> headers; // resto de headers HTTP
 	};
 
@@ -101,9 +101,8 @@ public:
 	// Separa la salida cruda del CGI en headers + body, siguiendo el
 	// formato CGI estandar (headers, linea en blanco, body). Si el
 	// script no imprime headers, todo el output se trata como body.
-	static bool splitOutput(const std::string &raw,
-							 std::map<std::string, std::string> &headers,
-							 std::string &body);
+	static bool splitOutput(const std::string &raw, std::map<std::string, std::string> &headers,
+							std::string &body);
 
 private:
 	State _state;
