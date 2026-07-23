@@ -6,7 +6,7 @@
 /*   By: mvidal-h <mvidal-h@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/10 12:50:27 by mvidal-h          #+#    #+#             */
-/*   Updated: 2026/07/15 17:43:36 by mvidal-h         ###   ########.fr       */
+/*   Updated: 2026/07/21 14:40:45 by mvidal-h         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
  */
 HTTPResponse::HTTPResponse() : _statusCode(200), _statusMessage("OK")
 {
-	std::cout << BOLD_GREEN << "HTTPResponse default constructor called" << std::endl;
+	std::cout << BOLD_GREEN << "HTTPResponse default constructor called" << RESET << std::endl;
 }
 
 /**
@@ -34,7 +34,7 @@ HTTPResponse::HTTPResponse(const HTTPResponse &other)
 	: _statusCode(other._statusCode), _statusMessage(other._statusMessage),
 	  _headers(other._headers), _body(other._body)
 {
-	std::cout << BOLD_GREEN << "HTTPResponse copy constructor called" << std::endl;
+	std::cout << BOLD_GREEN << "HTTPResponse copy constructor called" << RESET << std::endl;
 }
 
 /**
@@ -52,7 +52,7 @@ HTTPResponse &HTTPResponse::operator=(const HTTPResponse &other)
 		_headers = other._headers;
 		_body = other._body;
 	}
-	std::cout << BOLD_GREEN << "HTTPResponse assignment operator called" << std::endl;
+	std::cout << BOLD_GREEN << "HTTPResponse assignment operator called" << RESET << std::endl;
 	return *this;
 }
 
@@ -61,7 +61,7 @@ HTTPResponse &HTTPResponse::operator=(const HTTPResponse &other)
  */
 HTTPResponse::~HTTPResponse()
 {
-	std::cout << BOLD_RED << "HTTPResponse destructor called" << std::endl;
+	std::cout << BOLD_RED << "HTTPResponse destructor called" << RESET << std::endl;
 }
 
 /**

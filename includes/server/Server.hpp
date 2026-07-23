@@ -3,6 +3,7 @@
 
 #include <poll.h>
 #include <vector>
+#include <map>
 #include "config/Config.hpp"
 #include "http/HTTPResponse.hpp"
 #include "http/HTTPRequest.hpp"

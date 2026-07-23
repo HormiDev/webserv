@@ -6,7 +6,7 @@
 /*   By: mvidal-h <mvidal-h@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/03 15:28:35 by mvidal-h          #+#    #+#             */
-/*   Updated: 2026/07/16 17:12:47 by mvidal-h         ###   ########.fr       */
+/*   Updated: 2026/07/21 15:20:55 by mvidal-h         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,8 @@ Config::Config() : _root("./"), _index("index.html"), _host("0.0.0.0"), _port(80
  * of another.
  */
 Config::Config(const Config &other)
-	: _root(other._root), _index(other._index), _host(other._host), _port(other._port)
+	: _root(other._root), _index(other._index), _host(other._host), _port(other._port),
+	  _errorPages(other._errorPages)
 {
 	std::cout << BOLD_GREEN << "Config copy constructor called" << RESET << std::endl;
 }
@@ -51,6 +52,7 @@ Config &Config::operator=(const Config &other)
 		_index = other._index;
 		_port = other._port;
 		_host = other._host;
+		_errorPages = other._errorPages;
 	}
 	std::cout << BOLD_GREEN << "Config assignment operator called" << RESET << std::endl;
 	return *this;
@@ -89,6 +91,19 @@ std::string Config::getIndex() const
 int Config::getPort() const
 {
 	return _port;
+}
+
+/*
+ * Gets the error page path for a specific error code.
+ * @param errorCode The HTTP error code.
+ * @return The path to the corresponding error page, or an empty string if not set.
+ */
+std::string Config::getErrorPage(int errorCode) const
+{
+	std::map<int, std::string>::const_iterator it = _errorPages.find(errorCode);
+	if (it != _errorPages.end())
+		return it->second;
+	return "";
 }
 
 /**
@@ -137,6 +152,16 @@ void Config::setHost(const std::string &host)
 }
 
 /**
+ * Sets the error page path for a specific error code.
+ * @param errorCode The HTTP error code.
+ * @param errorPagePath The path to the corresponding error page.
+ */
+void Config::setErrorPage(int errorCode, const std::string &errorPagePath)
+{
+	_errorPages.insert(std::make_pair(errorCode, errorPagePath));
+}
+
+/**
  * Prints the configuration values.
  */
 void Config::print() const
@@ -146,4 +171,8 @@ void Config::print() const
 	std::cout << "  Index: " << _index << std::endl;
 	std::cout << "  Port: " << _port << std::endl;
 	std::cout << "  Host: " << _host << std::endl;
+	std::cout << "  Error Pages:" << std::endl;
+	for (std::map<int, std::string>::const_iterator it = _errorPages.begin();
+		 it != _errorPages.end(); ++it)
+		std::cout << "    " << it->first << ": " << it->second << std::endl;
 }

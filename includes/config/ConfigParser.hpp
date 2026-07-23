@@ -6,7 +6,7 @@
 /*   By: mvidal-h <mvidal-h@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/06 14:38:09 by mvidal-h          #+#    #+#             */
-/*   Updated: 2026/07/16 16:28:23 by mvidal-h         ###   ########.fr       */
+/*   Updated: 2026/07/21 12:27:42 by mvidal-h         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,9 @@ private:
 	void parseListen(Config &config);
 	void parseRoot(Config &config);
 	void parseIndex(Config &config);
+	void parseErrorPage(Config &config);
+
+	long strToLong(const std::string &str);
 };
 
 #endif

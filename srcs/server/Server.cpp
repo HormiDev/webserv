@@ -95,7 +95,7 @@ void Server::setupAddressInfo()
 	hints.ai_family =
 		AF_INET; // AF_INET for IPv4, AF_INET6 for IPv6, AF_UNSPEC for any address family
 	hints.ai_socktype = SOCK_STREAM; // TCP socket
-	hints.ai_flags = AI_PASSIVE;	 // Socket will be used for binding, not for connect.
+	hints.ai_flags = AI_PASSIVE;	 // Socket will be used for binding
 
 	if (getaddrinfo(_config.getHost().c_str(), port.c_str(), &hints, &_addrInfo) !=
 		0) // (Parametros: host, port, hints(La receta de cómo queremos crear el socket), result (la estructura donde se guardará la info de la dirección. Mirar en http.md para entender la estructura addrinfo))
@@ -134,7 +134,7 @@ void Server::createSocket()
 /**
  * Binds the server socket to the specified port and address.
  */
-void Server::bindSocket() //IMP: PROXIMO PASO cambiarlo para usar la funcion getaddrinfo()
+void Server::bindSocket()
 {
 	if (bind(_serverSocket, _addrInfo->ai_addr, _addrInfo->ai_addrlen) == -1)
 	{
@@ -172,8 +172,8 @@ void Server::initPoll()
 
 	_pollFds.push_back(
 		serverPoll); // Agregamos el pollfd del servidor al vector de pollfd que vamos a pasar a la función poll(). De esta manera, el servidor estará escuchando nuevas conexiones entrantes en su socket.
-	// El vector _pollFds contendrá todos los pollfd que queremos escuchar: el del servidor y los de los clientes conectados. Cuando llamemos a poll(), el kernel nos dirá cuáles de estos pollfd tienen eventos pendientes (nuevas conexiones o datos para leer).
-	// Es como una lista de elementos a los que el poll estará atento y nos avisará cuando haya algo que atender.
+		// El vector _pollFds contendrá todos los pollfd que queremos escuchar: el del servidor y los de los clientes conectados. Cuando llamemos a poll(), el kernel nos dirá cuáles de estos pollfd tienen eventos pendientes (nuevas conexiones o datos para leer).
+		// Es como una lista de elementos a los que el poll estará atento y nos avisará cuando haya algo que atender.
 }
 
 /**
@@ -321,15 +321,14 @@ void Server::readFromClient(int clientSocket)
 			client
 				.getRecvBuffer()); //Parseamos la peticion que hemos obtenido con el recv y la convertimos en un objeto HTTPRequest que nos permite acceder a los diferentes elementos de la peticion (metodo, path, version, headers, body)
 		//IMP: QUITAR ESTO DESPUÉS DE HACER PRUEBAS
-		std::cout << "Parsed request: " << std::endl;
-		std::cout << "Method: " << request.getMethod() << std::endl;
-		std::cout << "Path: " << request.getPath() << std::endl;
-		std::cout << "Version: " << request.getVersion() << std::endl;
-		std::cout << "Headers: " << std::endl;
-		for (std::map<std::string, std::string>::const_iterator it = request.getHeaders().begin();
-			 it != request.getHeaders().end(); ++it)
-			std::cout << it->first << ": " << it->second << std::endl;
-		std::cout << "Body: " << request.getBody() << std::endl;
+		// std::cout << "Parsed request: " << std::endl;
+		// std::cout << "Method: " << request.getMethod() << std::endl;
+		// std::cout << "Path: " << request.getPath() << std::endl;
+		// std::cout << "Version: " << request.getVersion() << std::endl;
+		// std::cout << "Headers: " << std::endl;
+		// for (std::map<std::string, std::string>::const_iterator it = request.getHeaders().begin(); it != request.getHeaders().end(); ++it)
+		// 	std::cout << it->first << ": " << it->second << std::endl;
+		// std::cout << "Body: " << request.getBody() << std::endl;
 		//IMP: QUITAR ESTO DESPUÉS DE HACER PRUEBAS
 
 		client.getResponse() = handleRequest(
@@ -343,7 +342,7 @@ void Server::readFromClient(int clientSocket)
 	}
 	catch (const HTTPException &e)
 	{
-		HTTPResponse response = createErrorResponse(static_cast<HttpStatus>(
+		client.getResponse() = createErrorResponse(static_cast<HttpStatus>(
 			e.getStatusCode())); // Si ocurre una excepción HTTP (por ejemplo, un error de parseo de la solicitud), generamos una respuesta de error correspondiente y la enviamos al cliente. Luego tendremos que mejorarlo con las paginas de error personalizadas que nos indicara en archivo de configuracion.
 		client.getSendBuffer() = client.getResponse().serialize();
 		setPollEvent(clientSocket, POLLOUT);
@@ -430,12 +429,7 @@ HTTPResponse Server::handleRequest(const HTTPRequest &request)
 
 	std::ifstream file_stream(srcPath.c_str());
 	if (!file_stream.is_open()) // si no puede abrir el fichero o no existe, devolvemos un error 404
-	{
-		std::ostringstream bodystream;
-		bodystream << NOT_FOUND << " " << getStatusMessage(NOT_FOUND);
-		std::string body = bodystream.str();
-		return createResponse(NOT_FOUND, "text/plain", body);
-	}
+		return createErrorResponse(NOT_FOUND);
 	else // si puede abrir el fichero, lo leemos y lo devolvemos como respuesta.
 	{
 		std::ostringstream bodystream;
@@ -478,8 +472,22 @@ HTTPResponse Server::createResponse(HttpStatus statusCode, const std::string &co
  */
 HTTPResponse Server::createErrorResponse(HttpStatus statusCode)
 {
+	std::ostringstream errorPagePathStream;
+	errorPagePathStream << _config.getRoot() << _config.getErrorPage(statusCode);
 	std::ostringstream bodystream;
-	bodystream << statusCode << " " << getStatusMessage(statusCode);
-	std::string body = bodystream.str();
-	return createResponse(statusCode, "text/plain", body);
+
+	std::ifstream error_file_stream(errorPagePathStream.str().c_str());
+	if (!error_file_stream
+			 .is_open()) // si no puede abrir el fichero o no existe, devolvemos un error 404
+	{
+		bodystream << statusCode << " " << getStatusMessage(statusCode);
+		std::string body = bodystream.str();
+		return createResponse(statusCode, "text/plain", body);
+	}
+	else // si puede abrir el fichero, lo leemos y lo devolvemos como respuesta.
+	{
+		bodystream << error_file_stream.rdbuf();
+		std::string body = bodystream.str();
+		return createResponse(statusCode, "text/html", body);
+	}
 }

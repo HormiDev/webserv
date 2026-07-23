@@ -6,7 +6,7 @@
 /*   By: mvidal-h <mvidal-h@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/06 15:01:12 by mvidal-h          #+#    #+#             */
-/*   Updated: 2026/07/16 17:15:02 by mvidal-h         ###   ########.fr       */
+/*   Updated: 2026/07/21 12:28:45 by mvidal-h         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,6 +171,8 @@ void ConfigParser::parseServer(Config &config)
 			parseRoot(config);
 		else if (current() == "index")
 			parseIndex(config);
+		else if (current() == "error_page")
+			parseErrorPage(config);
 		else
 			throw std::runtime_error("Unexpected token in server block: " + current());
 	}
@@ -204,16 +206,12 @@ void ConfigParser::parseListen(Config &config)
 		if (listenStr.empty())
 			throw std::runtime_error("Missing port");
 	}
-	char *end;
-	long port = std::strtol(
-		listenStr.c_str(), &end,
-		10); // Convertimos el token actual a un número entero (long) usando strtol. end apunta al primer caracter que no se pudo convertir. (el 10 es la base a lo que lo queremos convertir)
-	if (*end != '\0' || port < 1 ||
-		port >
-			65535) // Si end no apunta al final de la cadena, significa que hubo caracteres no numéricos en el token. Además, comprobamos que el puerto esté en el rango válido (1-65535).
+	long port = strToLong(listenStr);
+	if (port < 1 || port > 65535) // Comprobamos que el puerto esté en el rango válido (1-65535).
 		throw std::runtime_error("Invalid port number: " + current());
-	config.setPort(port); // Si todo es correcto, establecemos el puerto en el objeto config.
-	next();				  // Avanzamos al siguiente token, que debería ser el punto y coma.
+	config.setPort(
+		static_cast<int>(port)); // Si todo es correcto, establecemos el puerto en el objeto config.
+	next();						 // Avanzamos al siguiente token, que debería ser el punto y coma.
 	expect(
 		";"); // Comprobamos que el siguiente token sea un punto y coma, que indica el final de la directiva de puerto. SI no lo es lanzamos un error porque no estaria bien formado.
 }
@@ -249,4 +247,35 @@ void ConfigParser::parseIndex(Config &config)
 	next(); // Avanzamos al siguiente token, que debería ser el punto y coma.
 	expect(
 		";"); // Comprobamos que el siguiente token sea un punto y coma, que indica el final de la directiva de index. SI no lo es lanzamos un error porque no estaria bien formado.
+}
+
+void ConfigParser::parseErrorPage(Config &config)
+{
+	expect(
+		"error_page"); // Si el token actual es "error_page", avanzamos al siguiente token que debería ser el código de error.
+	std::string errorCodeStr = current(); // Obtenemos el valor del token actual.
+	long errorCode = strToLong(errorCodeStr);
+	if (errorCode < 100 ||
+		errorCode > 599) // Comprobamos que el código de error esté en el rango válido (100-599).
+		throw std::runtime_error("Invalid error code: " + errorCodeStr);
+	next(); // Avanzamos al siguiente token, que debería ser la ruta de la página de error.
+	std::string errorPagePath = current(); // Obtenemos el valor del token actual
+	config.setErrorPage(
+		static_cast<int>(errorCode),
+		errorPagePath); // Establecemos la ruta de la página de error en el objeto config.
+	next();				// Avanzamos al siguiente token, que debería ser el punto y coma.
+	expect(
+		";"); // Comprobamos que el siguiente token sea un punto y coma, que indica el final de la directiva de página de error. SI no lo es lanzamos un error porque no estaria bien formado.
+}
+
+long ConfigParser::strToLong(const std::string &str)
+{
+	char *end;
+	long value = std::strtol(
+		str.c_str(), &end,
+		10); // Convertimos el token actual a un número entero (long) usando strtol. end apunta al primer caracter que no se pudo convertir. (el 10 es la base a lo que lo queremos convertir)
+	if (*end !=
+		'\0') // Si end no apunta al final de la cadena, significa que hubo caracteres no numéricos en el token actual, por lo que lanzamos un error.
+		throw std::runtime_error("Invalid number: " + str);
+	return value;
 }
