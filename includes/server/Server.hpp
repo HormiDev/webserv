@@ -31,13 +31,14 @@ private:
 	//Request handling
 	HTTPResponse handleRequest(const HTTPRequest &request, const ServerSocket &serverSocket);
 	//Response handling
-	HTTPResponse createResponse(HttpStatus statusCode, const std::string &contentType, const std::string &body);
+	HTTPResponse createResponse(HttpStatus statusCode, const std::string &contentType,
+								const std::string &body);
 	HTTPResponse createErrorResponse(HttpStatus statusCode, const ServerSocket &serverSocket);
 	//Vector of server sockets handling
-	ServerSocket* getServerSocketByFd(int fd);
+	ServerSocket *getServerSocketByFd(int fd);
 
 public:
-	Server(const std::vector<Config>& configs);
+	Server(const std::vector<Config> &configs);
 	Server(const Server &other);
 	Server &operator=(const Server &other);
 	~Server();

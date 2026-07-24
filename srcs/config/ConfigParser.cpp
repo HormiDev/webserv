@@ -107,7 +107,10 @@ std::vector<Config> ConfigParser::parse(const std::string &filename)
 		ss >>
 		token) //Vamos leyento token a token con el operador >> y los vamos guardando en el vector _tokens con push_back.
 		_tokens.push_back(token);
-	while (_pos < _tokens.size()) //Recorremos el vector de tokens hasta que lleguemos al final y parsearemos cada bloque de configuracion del server.
+	while (
+		_pos <
+		_tokens
+			.size()) //Recorremos el vector de tokens hasta que lleguemos al final y parsearemos cada bloque de configuracion del server.
 	{
 		Config config = parseServer();
 		configs.push_back(config);

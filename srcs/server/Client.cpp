@@ -20,7 +20,8 @@
  * @param clientFd The file descriptor for the client socket.
  * @param serverSocket The server socket to which the client is connected.
  */
-Client::Client(int clientFd, ServerSocket &serverSocket) : _fd(clientFd), _serverSocket(serverSocket), _bytesSent(0), _keepAlive(false)
+Client::Client(int clientFd, ServerSocket &serverSocket)
+	: _fd(clientFd), _serverSocket(serverSocket), _bytesSent(0), _keepAlive(false)
 {
 	std::cout << BOLD_GREEN << "Client constructor called" << RESET << std::endl;
 }
@@ -31,9 +32,9 @@ Client::Client(int clientFd, ServerSocket &serverSocket) : _fd(clientFd), _serve
  * @param other The Client object to copy from.
  */
 Client::Client(const Client &other)
-	: _fd(other._fd), _serverSocket(other._serverSocket), _recvBuffer(other._recvBuffer), _sendBuffer(other._sendBuffer),
-	  _bytesSent(other._bytesSent), _request(other._request), _response(other._response),
-	  _keepAlive(other._keepAlive)
+	: _fd(other._fd), _serverSocket(other._serverSocket), _recvBuffer(other._recvBuffer),
+	  _sendBuffer(other._sendBuffer), _bytesSent(other._bytesSent), _request(other._request),
+	  _response(other._response), _keepAlive(other._keepAlive)
 {
 	std::cout << BOLD_GREEN << "Client copy constructor called" << RESET << std::endl;
 }
@@ -84,7 +85,7 @@ int Client::getFd() const
  * 
  * @return A reference to the server socket.
  */
-ServerSocket& Client::getServerSocket() const
+ServerSocket &Client::getServerSocket() const
 {
 	return _serverSocket;
 }
