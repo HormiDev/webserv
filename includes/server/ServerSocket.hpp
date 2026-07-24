@@ -6,7 +6,7 @@
 /*   By: mvidal-h <mvidal-h@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 15:15:20 by mvidal-h          #+#    #+#             */
-/*   Updated: 2026/07/22 16:40:49 by mvidal-h         ###   ########.fr       */
+/*   Updated: 2026/07/24 11:48:40 by mvidal-h         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ public:
 	~ServerSocket();
 
 	//getters
-	int getFd() const;
+	int getserverSocketFd() const;
 	const Config &getConfig() const;
 
 	void startServerSocket();

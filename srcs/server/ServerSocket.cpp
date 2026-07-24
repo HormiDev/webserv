@@ -6,7 +6,7 @@
 /*   By: mvidal-h <mvidal-h@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/22 15:34:35 by mvidal-h          #+#    #+#             */
-/*   Updated: 2026/07/22 16:57:29 by mvidal-h         ###   ########.fr       */
+/*   Updated: 2026/07/24 11:48:51 by mvidal-h         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,7 +156,7 @@ void ServerSocket::listenSocket()
  *
  * @return The server socket descriptor.
  */
-int ServerSocket::getFd() const
+int ServerSocket::getserverSocketFd() const
 {
 	return _serverSocketFd;
 }

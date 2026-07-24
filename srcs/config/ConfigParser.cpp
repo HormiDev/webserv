@@ -6,7 +6,7 @@
 /*   By: mvidal-h <mvidal-h@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/06 15:01:12 by mvidal-h          #+#    #+#             */
-/*   Updated: 2026/07/21 12:28:45 by mvidal-h         ###   ########.fr       */
+/*   Updated: 2026/07/24 15:08:51 by mvidal-h         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,11 +66,11 @@ ConfigParser::~ConfigParser()
  * Parses the configuration file and returns a Config object.
  * 
  * filename: The path to the configuration file.
- * @return A Config object initialized with the parsed values.
+ * @return A vector of Config objects initialized with the parsed values.
  */
-Config ConfigParser::parse(const std::string &filename)
+std::vector<Config> ConfigParser::parse(const std::string &filename)
 {
-	Config config;
+	std::vector<Config> configs;
 
 	_tokens
 		.clear(); // Hacemos Clear pare eliminar cualquier token previo en caso de que se llame a parse varias veces con diferentes archivos de configuración.
@@ -107,9 +107,12 @@ Config ConfigParser::parse(const std::string &filename)
 		ss >>
 		token) //Vamos leyento token a token con el operador >> y los vamos guardando en el vector _tokens con push_back.
 		_tokens.push_back(token);
-
-	parseServer(config);
-	return config;
+	while (_pos < _tokens.size()) //Recorremos el vector de tokens hasta que lleguemos al final y parsearemos cada bloque de configuracion del server.
+	{
+		Config config = parseServer();
+		configs.push_back(config);
+	}
+	return configs;
 }
 
 /**
@@ -154,8 +157,9 @@ void ConfigParser::expect(const std::string &token)
  * 
  * config: The Config object to initialize.
  */
-void ConfigParser::parseServer(Config &config)
+Config ConfigParser::parseServer()
 {
+	Config config;
 	expect(
 		"server"); // Si el primer token no es "server", lanzamos un error porque sabemos que el archivo de conf esta mal formado. Si lo es, avanza al siguiente.
 	expect(
@@ -177,6 +181,7 @@ void ConfigParser::parseServer(Config &config)
 			throw std::runtime_error("Unexpected token in server block: " + current());
 	}
 	expect("}");
+	return config; // Una vez hemos parseado todo el bloque de configuracion del server, devolvemos el objeto config con los valores parseados.
 }
 
 /**
