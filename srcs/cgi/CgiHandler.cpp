@@ -19,10 +19,9 @@ CgiHandler::~CgiHandler()
 }
 
 /**
- * Lanza el proceso CGI: crea los dos pipes, hace fork, y en el hijo
- * redirige stdin/stdout y ejecuta el script via execve. En el padre,
- * deja los fds en modo no bloqueante listos para que el llamador los
- * registre en su propio poll().
+ * Lanzo el proceso CGI: creo los dos pipes y hago fork. Todo lo que pasa
+ * dentro de cada rama del fork lo delego en runChild()/setupParent() para
+ * no tener una funcion gigante donde cuesta ver que hace cada rama.
  */
 bool CgiHandler::start(const Request &request, const std::string &interpreterPath)
 {
@@ -50,59 +49,80 @@ bool CgiHandler::start(const Request &request, const std::string &interpreterPat
 
 	if (pid == 0)
 	{
-		// ---------- Proceso hijo ----------
-		dup2(inPipe[0], STDIN_FILENO);
-		dup2(outPipe[1], STDOUT_FILENO);
-		close(inPipe[0]);
-		close(inPipe[1]);
-		close(outPipe[0]);
-		close(outPipe[1]);
-
-		// El CGI debe ejecutarse en su propio directorio para que los
-		// paths relativos que use el script funcionen (asi lo exige el subject).
-		std::string scriptDir = ".";
-		std::string scriptFile = request.scriptPath;
-		size_t slash = request.scriptPath.find_last_of('/');
-		if (slash != std::string::npos)
-		{
-			scriptDir = request.scriptPath.substr(0, slash);
-			scriptFile = request.scriptPath.substr(slash + 1);
-		}
-		if (chdir(scriptDir.c_str()) == -1)
-			_exit(1);
-
-		std::vector<std::string> envStrings = buildEnv(request);
-		char **envp = envToArgv(envStrings);
-
-		std::string relativeScript = "./" + scriptFile;
-		std::string execPath = interpreterPath.empty() ? relativeScript : interpreterPath;
-
-		char *argv[3];
-		argv[0] = const_cast<char *>(execPath.c_str());
-		if (interpreterPath.empty())
-		{
-			argv[1] = NULL;
-		}
-		else
-		{
-			argv[1] = const_cast<char *>(relativeScript.c_str());
-			argv[2] = NULL;
-		}
-
-		execve(execPath.c_str(), argv, envp);
-		// Si llegamos aqui, execve ha fallado (script no existe, sin
-		// permisos, interprete no encontrado...). No hay vuelta atras.
-		_exit(1);
+		runChild(request, interpreterPath, inPipe, outPipe);
+		// runChild() nunca vuelve: o hace execve, o termina con _exit(1).
 	}
 
-	// ---------- Proceso padre ----------
+	setupParent(pid, inPipe, outPipe, request);
+	return true;
+}
+
+/**
+ * Esto solo se ejecuta en el hijo. Redirijo stdin/stdout a los pipes,
+ * cierro los fds que ya no necesito, me cambio al directorio del script
+ * (el subject lo exige, para que los paths relativos del script funcionen)
+ * y ejecuto el interprete (o el script directamente si tiene shebang).
+ */
+void CgiHandler::runChild(const Request &request, const std::string &interpreterPath,
+						  int inPipe[2], int outPipe[2]) const
+{
+	dup2(inPipe[0], STDIN_FILENO);
+	dup2(outPipe[1], STDOUT_FILENO);
+	close(inPipe[0]);
+	close(inPipe[1]);
+	close(outPipe[0]);
+	close(outPipe[1]);
+
+	std::string scriptDir = ".";
+	std::string scriptFile = request.scriptPath;
+	size_t slash = request.scriptPath.find_last_of('/');
+	if (slash != std::string::npos)
+	{
+		scriptDir = request.scriptPath.substr(0, slash);
+		scriptFile = request.scriptPath.substr(slash + 1);
+	}
+	if (chdir(scriptDir.c_str()) == -1)
+		_exit(1);
+
+	std::vector<std::string> envStrings = buildEnv(request);
+	char **envp = envToArgv(envStrings);
+
+	std::string relativeScript = "./" + scriptFile;
+	std::string execPath = interpreterPath.empty() ? relativeScript : interpreterPath;
+
+	char *argv[3];
+	argv[0] = const_cast<char *>(execPath.c_str());
+	if (interpreterPath.empty())
+	{
+		argv[1] = NULL;
+	}
+	else
+	{
+		argv[1] = const_cast<char *>(relativeScript.c_str());
+		argv[2] = NULL;
+	}
+
+	execve(execPath.c_str(), argv, envp);
+	// Si llego aqui, execve ha fallado (script inexistente, sin permisos,
+	// interprete no encontrado...). No hay vuelta atras posible.
+	_exit(1);
+}
+
+/**
+ * Esto solo se ejecuta en el padre, justo despues del fork. Cierro los
+ * extremos de los pipes que le pertenecen al hijo, dejo los mios en modo
+ * no bloqueante (asi lo exige el subject para cualquier fd que pase por
+ * poll()) y dejo el objeto listo para que el server lo integre en su loop.
+ */
+void CgiHandler::setupParent(pid_t childPid, int inPipe[2], int outPipe[2], const Request &request)
+{
 	close(inPipe[0]);
 	close(outPipe[1]);
 
 	fcntl(inPipe[1], F_SETFL, O_NONBLOCK);
 	fcntl(outPipe[0], F_SETFL, O_NONBLOCK);
 
-	_pid = pid;
+	_pid = childPid;
 	_stdinFd = inPipe[1];
 	_stdoutFd = outPipe[0];
 	_pendingBody = request.body;
@@ -110,12 +130,10 @@ bool CgiHandler::start(const Request &request, const std::string &interpreterPat
 	_state = RUNNING;
 	_startTime = time(NULL);
 
-	// Si no hay body que mandar (GET, DELETE...), cerramos stdin ya
-	// para que el CGI vea EOF inmediatamente en su lectura.
+	// Si no hay body que mandar (GET, DELETE...), cierro stdin ya para que
+	// el CGI vea EOF inmediatamente en su primera lectura.
 	if (_pendingBody.empty())
 		closeStdin();
-
-	return true;
 }
 
 int CgiHandler::getStdinFd() const
@@ -129,8 +147,8 @@ int CgiHandler::getStdoutFd() const
 }
 
 /**
- * Escribe un trozo del body pendiente. El caller solo debe invocar esto
- * tras recibir POLLOUT del poll() principal sobre getStdinFd().
+ * Escribo un trozo del body pendiente. Solo debo llamar a esto tras
+ * recibir POLLOUT del poll() principal sobre getStdinFd().
  */
 void CgiHandler::writeToStdin()
 {
@@ -151,14 +169,14 @@ void CgiHandler::writeToStdin()
 	if (_bodyBytesSent == _pendingBody.size())
 		closeStdin();
 
-	// Si n <= 0 (EAGAIN u otro), no hacemos nada: el subject prohibe
-	// mirar errno tras un write, asi que simplemente esperamos al
-	// siguiente evento POLLOUT para reintentar.
+	// Si n <= 0 (EAGAIN u otro caso), no hago nada: el subject prohibe
+	// mirar errno tras un write, asi que simplemente espero al siguiente
+	// POLLOUT para reintentar.
 }
 
 /**
- * Lee del pipe de salida. El caller solo debe invocar esto tras recibir
- * POLLIN del poll() principal sobre getStdoutFd().
+ * Leo del pipe de salida. Solo debo llamar a esto tras recibir POLLIN
+ * del poll() principal sobre getStdoutFd().
  */
 void CgiHandler::readFromStdout()
 {
@@ -175,13 +193,13 @@ void CgiHandler::readFromStdout()
 	else if (n == 0)
 	{
 		// EOF real: el script ha terminado de escribir. Segun el subject,
-		// si el CGI no manda Content-Length, este EOF es lo que marca
-		// el final de la respuesta.
+		// si el CGI no manda Content-Length, este EOF es lo que marca el
+		// final de la respuesta.
 		closeStdout();
 		reapChild();
 		_state = DONE;
 	}
-	// n < 0: nada listo todavia, se reintenta en el siguiente POLLIN.
+	// n < 0: nada listo todavia, reintento en el siguiente POLLIN.
 }
 
 bool CgiHandler::isComplete() const
@@ -213,9 +231,10 @@ const std::string &CgiHandler::getRawOutput() const
 }
 
 /**
- * Mata el proceso si sigue vivo, lo recoge con waitpid para no dejar
- * zombies, y cierra cualquier fd que siga abierto. Idempotente: se
- * puede llamar varias veces sin problema.
+ * Mato el proceso si sigue vivo, lo recojo con waitpid para no dejar
+ * zombies, y cierro cualquier fd que siga abierto. Es idempotente: puedo
+ * llamarlo varias veces sin problema (por eso tambien lo llamo desde el
+ * destructor, por si el caller se olvida).
  */
 void CgiHandler::terminate()
 {
@@ -257,9 +276,9 @@ void CgiHandler::reapChild()
 }
 
 /**
- * Construye las variables de entorno CGI/1.1 a partir de la request.
- * Los headers HTTP normales se traducen a HTTP_NOMBRE_DE_HEADER,
- * que es el formato estandar que cualquier script CGI espera leer.
+ * Construyo las variables de entorno CGI/1.1 a partir de la request.
+ * Los headers HTTP normales los traduzco a HTTP_NOMBRE_DE_HEADER, que es
+ * el formato estandar que cualquier script CGI espera leer.
  */
 std::vector<std::string> CgiHandler::buildEnv(const Request &request) const
 {
@@ -267,7 +286,7 @@ std::vector<std::string> CgiHandler::buildEnv(const Request &request) const
 
 	env.push_back("GATEWAY_INTERFACE=CGI/1.1");
 	env.push_back("SERVER_PROTOCOL=" + (request.serverProtocol.empty() ? std::string("HTTP/1.1")
-																	   : request.serverProtocol));
+																		: request.serverProtocol));
 	env.push_back("REQUEST_METHOD=" + request.method);
 	env.push_back("SCRIPT_NAME=" + request.scriptPath);
 	env.push_back("PATH_INFO=" + request.pathInfo);
@@ -302,10 +321,10 @@ std::vector<std::string> CgiHandler::buildEnv(const Request &request) const
 }
 
 /**
- * Convierte el vector de strings "CLAVE=valor" a un char** terminado
- * en NULL, tal como lo espera execve. Solo se usa justo antes de
- * execve en el proceso hijo, asi que no hace falta liberar memoria:
- * o el proceso reemplaza su imagen, o termina con _exit.
+ * Convierto el vector de strings "CLAVE=valor" a un char** terminado en
+ * NULL, tal como lo espera execve. Solo lo uso justo antes de execve en
+ * el proceso hijo, asi que no hace falta liberar esta memoria: o el
+ * proceso reemplaza su imagen, o termina con _exit.
  */
 char **CgiHandler::envToArgv(const std::vector<std::string> &env) const
 {
@@ -317,10 +336,10 @@ char **CgiHandler::envToArgv(const std::vector<std::string> &env) const
 }
 
 /**
- * Separa la salida cruda del CGI en headers + body. El formato CGI
- * estandar es: cabeceras tipo "Clave: valor", una linea en blanco,
- * y el body. Si el script no imprime ninguna cabecera, todo se trata
- * como body (esto es valido segun el subject).
+ * Separo la salida cruda del CGI en headers + body. El formato CGI
+ * estandar es: cabeceras tipo "Clave: valor", una linea en blanco, y el
+ * body. Si el script no imprime ninguna cabecera, trato todo como body
+ * (esto es valido segun el subject).
  */
 bool CgiHandler::splitOutput(const std::string &raw, std::map<std::string, std::string> &headers,
 							 std::string &body)
