@@ -6,7 +6,7 @@
 /*   By: mvidal-h <mvidal-h@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/06 14:38:09 by mvidal-h          #+#    #+#             */
-/*   Updated: 2026/07/21 12:27:42 by mvidal-h         ###   ########.fr       */
+/*   Updated: 2026/07/24 13:32:32 by mvidal-h         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ public:
 	ConfigParser &operator=(const ConfigParser &other);
 	~ConfigParser();
 
-	Config parse(const std::string &filename);
+	std::vector<Config> parse(const std::string &filename);
 
 private:
 	std::vector<std::string> _tokens;
@@ -34,7 +34,7 @@ private:
 	void next();
 	void expect(const std::string &token);
 
-	void parseServer(Config &config);
+	Config parseServer();
 	void parseListen(Config &config);
 	void parseRoot(Config &config);
 	void parseIndex(Config &config);

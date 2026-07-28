@@ -14,10 +14,14 @@ int main(int argc, char **argv)
 	try
 	{
 		ConfigParser configParser;
-		Config config = configParser.parse(argv[1]);
-		config.print();
+		std::vector<Config> configs = configParser.parse(argv[1]);
+		for (size_t i = 0; i < configs.size(); ++i)
+		{
+			std::cout << BOLD_GREEN << "Configuration " << i + 1 << ":" << RESET << std::endl;
+			configs[i].print();
+		}
 
-		Server server(config);
+		Server server(configs);
 		server.start();
 	}
 	catch (const std::exception &e)

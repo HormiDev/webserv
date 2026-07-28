@@ -6,7 +6,7 @@
 /*   By: mvidal-h <mvidal-h@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/15 12:14:40 by mvidal-h          #+#    #+#             */
-/*   Updated: 2026/07/16 11:43:36 by mvidal-h         ###   ########.fr       */
+/*   Updated: 2026/07/24 15:11:54 by mvidal-h         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,14 @@
 #include <string>
 #include "http/HTTPRequest.hpp"
 #include "http/HTTPResponse.hpp"
+#include "server/ServerSocket.hpp"
 
 class Client
 {
 private:
 	int _fd;
+	ServerSocket &
+		_serverSocket; //La referencia al serversocker al que pertenece el cliente. Esto es necesario para poder acceder a la configuracion del server desde el cliente, por ejemplo para obtener el root o el error_page.
 	std::string _recvBuffer;
 	std::string _sendBuffer;
 	size_t _bytesSent;
@@ -29,13 +32,14 @@ private:
 	bool _keepAlive;
 
 public:
-	Client(int clientFd);
+	Client(int clientFd, ServerSocket &serverSocket);
 	Client(const Client &other);
 	Client &operator=(const Client &other);
 	~Client();
 
 	// Getters
 	int getFd() const;
+	ServerSocket &getServerSocket() const;
 
 	std::string &getRecvBuffer();
 	const std::string &getRecvBuffer() const;
