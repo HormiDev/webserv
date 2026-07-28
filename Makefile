@@ -28,7 +28,7 @@ SRC_FILES	=	main.cpp \
 				http/HTTPRequest.cpp \
 				http/HTTPRequestParser.cpp \
 				http/HTTPResponse.cpp \
-				http/HttpStatus.cpp \
+				http/HTTPStatus.cpp \
 
 OBJ_FILES	=	$(SRC_FILES:.cpp=.o)
 
