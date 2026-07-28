@@ -28,7 +28,7 @@ SRC_FILES	=	main.cpp \
 				http/HTTPRequest.cpp \
 				http/HTTPRequestParser.cpp \
 				http/HTTPResponse.cpp \
-				http/HttpStatus.cpp \
+				http/HTTPStatus.cpp \
 
 OBJ_FILES	=	$(SRC_FILES:.cpp=.o)
 
@@ -73,5 +73,20 @@ fclean: clean
 #re rule
 re: fclean all
 
+#cgi standalone test (no depende de $(OBJ) ni toca objs/, para no interferir
+#con el resto del build mientras el CGI no esta integrado en el server)
+TEST_CGI_BIN	=	test_cgi
+
+test-cgi:
+	@echo -e "$(YELLOW)Compiling [$(TEST_CGI_BIN)]...$(RESET)"
+	@$(CC) $(CPPFLAGS) -I $(INC_DIR) -I $(INC_DIR)cgi \
+		$(SRC_DIR)cgi/CgiHandler.cpp tests/cgi/test_cgi.cpp \
+		-o $(TEST_CGI_BIN)
+	@echo -e "$(GREEN)Finished [$(TEST_CGI_BIN)]$(RESET)"
+	@./$(TEST_CGI_BIN)
+
+clean-test-cgi:
+	@rm -f $(TEST_CGI_BIN)
+
 #phony
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re test-cgi clean-test-cgi
