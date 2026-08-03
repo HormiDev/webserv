@@ -6,12 +6,12 @@
 /*   By: ide-dieg <ide-dieg@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/06 15:01:12 by mvidal-h          #+#    #+#             */
-/*   Updated: 2026/08/03 02:48:06 by ide-dieg         ###   ########.fr       */
+/*   Updated: 2026/08/01 12:10:34 by ide-dieg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "colors.hpp"
-#include "config/ConfigParser.hpp"
+#include "src/ConfigParser.hpp"
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
@@ -104,7 +104,7 @@ const std::vector<Token> &ConfigParser::getTokens() const
  * Devuelve la lista de servidores construida durante el parseo.
  * debug
  */
-const std::vector<ServerParser> &ConfigParser::getServers() const
+const std::vector<Server> &ConfigParser::getServers() const
 {
 	return _servers;
 }
@@ -121,7 +121,7 @@ void ConfigParser::buildServers()
 		if (iterator->getType() == 2 &&
 			iterator->getValue() == "server")
 		{
-			_servers.push_back(ServerParser(_tokens, iterator));
+			_servers.push_back(Server(_tokens, iterator));
 			while (iterator != _tokens.end() &&
 				!(iterator->getType() == 1 &&
 				  iterator->getValue() == "}"))

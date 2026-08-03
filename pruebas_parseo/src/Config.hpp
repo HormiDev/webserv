@@ -6,7 +6,7 @@
 /*   By: ide-dieg <ide-dieg@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/03 15:25:37 by mvidal-h          #+#    #+#             */
-/*   Updated: 2026/08/03 02:35:59 by ide-dieg         ###   ########.fr       */
+/*   Updated: 2026/08/02 18:36:39 by ide-dieg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include <string>
 #include <iostream>
 #include <map>
-#include "../colors.hpp"
+#include "colors.hpp"
 
 class Config
 {
