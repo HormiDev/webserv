@@ -6,11 +6,11 @@
 /*   By: ide-dieg <ide-dieg@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/03 15:28:35 by mvidal-h          #+#    #+#             */
-/*   Updated: 2026/08/03 02:34:57 by ide-dieg         ###   ########.fr       */
+/*   Updated: 2026/08/02 18:30:45 by ide-dieg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "config/Config.hpp"
+#include "src/Config.hpp"
 #include <fstream>
 #include <sstream>
 #include <vector>
