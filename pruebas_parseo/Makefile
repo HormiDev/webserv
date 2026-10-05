@@ -1,4 +1,4 @@
-NAME		=	tokenizer_test
+NAME		=	parser_test
 
 CXX			=	c++
 CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98
@@ -7,7 +7,8 @@ SRC			=	main.cpp \
 				src/Config.cpp \
 				src/ConfigParser.cpp \
 				src/Directives.cpp \
-				src/Server.cpp \
+				src/Listen.cpp \
+				src/ServerParser.cpp \
 				src/Token.cpp \
 				src/Tokenizer.cpp
 

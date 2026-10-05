@@ -11,21 +11,15 @@
 /* ************************************************************************** */
 
 #include "src/Config.hpp"
-#include <fstream>
-#include <sstream>
-#include <vector>
-
 /**
  * Default constructor for the Config class. Initializes default values for
- * port, root, and index.
- * 
- * port: Default port number (8080).
+ * root and index, and starts without listening endpoints.
+ *
  * root: Default root directory ("./").
  * index: Default index file ("index.html").
- * host: Default host ("0.0.0.0").
  */
-Config::Config() : _root("./"), _index("index.html"), _host("0.0.0.0"),
-	_port(8080), _client_max_body_size(1024L * 1024L)
+Config::Config() : _root("./"), _index("index.html"), _server_name(""),
+	_listens(), _client_max_body_size(1024L * 1024L)
 {
 	std::cout << BOLD_GREEN << "Config default constructor called" << RESET << std::endl;
 }
@@ -35,7 +29,8 @@ Config::Config() : _root("./"), _index("index.html"), _host("0.0.0.0"),
  * of another.
  */
 Config::Config(const Config &other)
-	: _root(other._root), _index(other._index), _host(other._host), _port(other._port),
+	: _root(other._root), _index(other._index),
+	  _server_name(other._server_name), _listens(other._listens),
 	  _errorPages(other._errorPages),
 	  _client_max_body_size(other._client_max_body_size)
 {
@@ -52,8 +47,8 @@ Config &Config::operator=(const Config &other)
 	{
 		_root = other._root;
 		_index = other._index;
-		_port = other._port;
-		_host = other._host;
+		_server_name = other._server_name;
+		_listens = other._listens;
 		_errorPages = other._errorPages;
 		_client_max_body_size = other._client_max_body_size;
 	}
@@ -85,15 +80,6 @@ std::string Config::getRoot() const
 std::string Config::getIndex() const
 {
 	return _index;
-}
-
-/**
- * Gets the port number.
- * @return The port number.
- */
-int Config::getPort() const
-{
-	return _port;
 }
 
 /*
@@ -136,30 +122,37 @@ void Config::setIndex(const std::string &index)
 }
 
 /**
- * Sets the port number.
- * @param port The port number.
+ * Gets every listening endpoint configured for this server.
  */
-void Config::setPort(int port)
+const std::vector<Listen> &Config::getListens() const
 {
-	_port = port;
+	return _listens;
 }
 
 /**
- * Gets the host.
- * @return The host.
+ * Gets the server name.
+ * @return The server name, or an empty string if it was not configured.
  */
-std::string Config::getHost() const
+std::string Config::getServerName() const
 {
-	return _host;
+	return _server_name;
 }
 
 /**
- * Sets the host.
- * @param host The host.
+ * Adds a listening endpoint to this server.
  */
-void Config::setHost(const std::string &host)
+void Config::addListen(const Listen &listen)
 {
-	_host = host;
+	_listens.push_back(listen);
+}
+
+/**
+ * Sets the server name.
+ * @param serverName The server name.
+ */
+void Config::setServerName(const std::string &serverName)
+{
+	_server_name = serverName;
 }
 
 /**
@@ -188,8 +181,12 @@ void Config::print() const
 	std::cout << BOLD_GREEN << "Config values:" << RESET << std::endl;
 	std::cout << "  Root: " << _root << std::endl;
 	std::cout << "  Index: " << _index << std::endl;
-	std::cout << "  Port: " << _port << std::endl;
-	std::cout << "  Host: " << _host << std::endl;
+	std::cout << "  Listens:" << std::endl;
+	for (size_t i = 0; i < _listens.size(); ++i)
+		std::cout << "    [" << i << "] "
+			<< _listens[i].getInterface() << ":"
+			<< _listens[i].getPort() << std::endl;
+	std::cout << "  Server name: " << _server_name << std::endl;
 	std::cout << "  Client max body size: "
 		<< _client_max_body_size << " bytes" << std::endl;
 	std::cout << "  Error Pages:" << std::endl;

@@ -26,7 +26,7 @@ static void printTokens(const std::vector<Token> &tokens)
 				  << "\"" << std::endl;
 }
 
-static void printServers(const std::vector<Server> &servers)
+static void printServers(const std::vector<ServerParser> &servers)
 {
 	std::cout << BOLD_CYAN << "\nSERVERS" << RESET << std::endl;
 	for (size_t i = 0; i < servers.size(); ++i)

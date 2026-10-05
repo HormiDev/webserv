@@ -14,7 +14,7 @@
 #define CONFIGPARSER_HPP
 
 #include "src/Config.hpp"
-#include "src/Server.hpp"
+#include "src/ServerParser.hpp"
 #include "src/Token.hpp"
 #include "src/Tokenizer.hpp"
 #include <string>
@@ -30,16 +30,18 @@ public:
 
 	std::vector<Config> parse(const std::string &filename);
 	const std::vector<Token> &getTokens() const; // debug
-	const std::vector<Server> &getServers() const; // debug
+	const std::vector<ServerParser> &getServers() const; // debug
 
 private:
 	std::string _fileContent;
 	Tokenizer _tokenizer;
 	std::vector<Token> _tokens;
-	std::vector<Server> _servers;
+	std::vector<ServerParser> _servers;
 
 	std::string readFile(const std::string &filename) const;
 	void buildServers();
+	void check_listen_and_servername() const;
+	Listen parseListen(const std::string &argument) const;
 	std::vector<Config> buildConfigs() const;
 	long strToLong(const std::string &str) const;
 };

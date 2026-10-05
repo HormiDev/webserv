@@ -66,6 +66,8 @@ Directives::Directives(const std::vector<Token> &tokens, size_t index)
 		_arguments.push_back(tokens[index].getValue());
 		++index;
 	}
+	if (_directive == "listen")
+		normalize_listen();
 	check_directive();
 }
 
@@ -110,7 +112,8 @@ void Directives::check_directive() const
 		throw std::runtime_error("Directive cannot be empty");
 	if (_directive != "listen" && _directive != "root" &&
 		_directive != "index" && _directive != "error_page" &&
-		_directive != "client_max_body_size")
+		_directive != "client_max_body_size" &&
+		_directive != "server_name")
 		throw std::runtime_error("Error: invalid directive: " + _directive);
 	if (_directive == "index")
 		check_index();
@@ -118,6 +121,8 @@ void Directives::check_directive() const
 		check_listen();
 	else if (_directive == "root")
 		check_root();
+	else if (_directive == "server_name")
+		check_server_name();
 	else if (_directive == "error_page")
 		check_error_page();
 	else if (_directive == "client_max_body_size")
@@ -142,9 +147,22 @@ void Directives::check_index() const
 }
 
 /**
+ * Traduce localhost a su dirección IPv4 antes de validar listen.
+ */
+void Directives::normalize_listen()
+{
+	for (size_t i = 0; i < _arguments.size(); ++i)
+	{
+		if (_arguments[i] == "localhost")
+			_arguments[i] = "127.0.0.1";
+		else if (_arguments[i].find("localhost:") == 0)
+			_arguments[i] = "127.0.0.1" + _arguments[i].substr(9);
+	}
+}
+
+/**
  * Comprueba que la directiva listen tenga exactamente un argumento y que sea válido.
- * de momento solo se permite un argumento, pero se puede ampliar para permitir varios.
- * pero lo he dejado asi para que se adapte a la estructura de datos de Config.
+ * Cada directiva representa una única entrada del vector de escuchas de Config.
  */
 void Directives::check_listen() const
 {
@@ -247,6 +265,17 @@ void Directives::check_root() const
 		throw std::runtime_error("Directive root path cannot be empty");
 	if (_arguments[0].size() > 4096)
 		throw std::runtime_error("Directive root path exceeds maximum path length");
+}
+
+/**
+ * Comprueba que server_name tenga exactamente un nombre no vacío.
+ */
+void Directives::check_server_name() const
+{
+	if (_arguments.size() != 1)
+		throw std::runtime_error("Directive server_name requires exactly one argument");
+	if (_arguments[0].empty())
+		throw std::runtime_error("Directive server_name cannot be empty");
 }
 
 /**

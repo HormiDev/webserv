@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Server.hpp                                         :+:      :+:    :+:   */
+/*   ServerParser.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ide-dieg <ide-dieg@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,28 +10,31 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef TEST_SERVER_HPP
-#define TEST_SERVER_HPP
+#ifndef SERVERPARSER_HPP
+#define SERVERPARSER_HPP
 
 #include "src/Directives.hpp"
 #include "src/Token.hpp"
+#include <string>
 #include <vector>
 
-class Server
+class ServerParser
 {
 public:
-	Server();
-	Server(const Server &other);
-	Server &operator=(const Server &other);
-	~Server();
-	Server(const std::vector<Token> &tokens,
+	ServerParser();
+	ServerParser(const ServerParser &other);
+	ServerParser &operator=(const ServerParser &other);
+	~ServerParser();
+	ServerParser(const std::vector<Token> &tokens,
 		std::vector<Token>::const_iterator iterator);
 
 	const std::vector<Directives> &getDirectives() const;
+	std::string getServerName() const;
 	void setDirectives(const std::vector<Directives> &directives);
 
 private:
 	std::vector<Directives> _directives;
+	void check_listen() const;
 };
 
 #endif

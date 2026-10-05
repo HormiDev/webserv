@@ -104,7 +104,7 @@ const std::vector<Token> &ConfigParser::getTokens() const
  * Devuelve la lista de servidores construida durante el parseo.
  * debug
  */
-const std::vector<Server> &ConfigParser::getServers() const
+const std::vector<ServerParser> &ConfigParser::getServers() const
 {
 	return _servers;
 }
@@ -121,7 +121,7 @@ void ConfigParser::buildServers()
 		if (iterator->getType() == 2 &&
 			iterator->getValue() == "server")
 		{
-			_servers.push_back(Server(_tokens, iterator));
+			_servers.push_back(ServerParser(_tokens, iterator));
 			while (iterator != _tokens.end() &&
 				!(iterator->getType() == 1 &&
 				  iterator->getValue() == "}"))
@@ -130,6 +130,87 @@ void ConfigParser::buildServers()
 		if (iterator != _tokens.end())
 			++iterator;
 	}
+	check_listen_and_servername();
+}
+
+/**
+ * Rechaza escuchas solapadas entre servidores con el mismo server_name.
+ * Los servidores sin server_name comparten el nombre vacío por defecto.
+ */
+void ConfigParser::check_listen_and_servername() const
+{
+	// Compara cada pareja una sola vez: j empieza después de i.
+	// Este chequeo compara servidores distintos, no escuchas del mismo bloque.
+	for (size_t i = 0; i < _servers.size(); ++i)
+	{
+		const std::string serverName = _servers[i].getServerName();
+		const std::vector<Directives> &firstDirectives = _servers[i].getDirectives();
+		for (size_t j = i + 1; j < _servers.size(); ++j)
+		{
+			// Nombres distintos pueden compartir una escucha.
+			if (serverName != _servers[j].getServerName())
+				continue;
+			const std::vector<Directives> &secondDirectives = _servers[j].getDirectives();
+			// Consulta las directivas originales por referencia, sin copiar vectores.
+			for (size_t a = 0; a < firstDirectives.size(); ++a)
+			{
+				if (firstDirectives[a].getDirective() != "listen")
+					continue;
+				// Usa los mismos valores por defecto que buildConfigs.
+				const Listen first = parseListen(firstDirectives[a].getArguments()[0]);
+				for (size_t b = 0; b < secondDirectives.size(); ++b)
+				{
+					if (secondDirectives[b].getDirective() != "listen")
+						continue;
+					const Listen second = parseListen(secondDirectives[b].getArguments()[0]);
+					// Solo hay solapamiento si el puerto coincide y las IP son
+					// iguales, o alguna es 0.0.0.0 (abarca cualquier IP).
+					if (first.getPort() == second.getPort() &&
+						(first.getInterface() == second.getInterface() ||
+						 first.getInterface() == "0.0.0.0" ||
+						 second.getInterface() == "0.0.0.0"))
+					{
+						// Detiene el parseo e identifica los servidores (desde 1),
+						// el nombre compartido y las escuchas que causan el conflicto.
+						std::ostringstream message;
+						message << "Error: servers " << i + 1 << " and " << j + 1
+							<< " share server_name \"" << serverName
+							<< "\" and overlapping listen endpoints: "
+							<< first.getInterface() << ":" << first.getPort()
+							<< " and " << second.getInterface() << ":"
+							<< second.getPort();
+						throw std::runtime_error(message.str());
+					}
+				}
+			}
+		}
+	}
+}
+
+/**
+ * Convierte un argumento listen validado en una IP y un puerto.
+ * Comparte los valores por defecto entre el chequeo y buildConfigs.
+ */
+Listen ConfigParser::parseListen(const std::string &argument) const
+{
+	std::string interface = "0.0.0.0";
+	long port = 8000;
+	size_t colon = argument.find(":");
+
+	if (colon != std::string::npos)
+	{
+		if (colon == 0 || colon == argument.size() - 1)
+			throw std::runtime_error("Error: invalid listen argument: " + argument);
+		interface = argument.substr(0, colon);
+		port = strToLong(argument.substr(colon + 1));
+	}
+	else if (argument.find('.') != std::string::npos)
+		interface = argument;
+	else
+		port = strToLong(argument);
+	if (port < 1 || port > 65535)
+		throw std::runtime_error("Error: invalid port number: " + argument);
+	return Listen(static_cast<int>(port), interface);
 }
 
 /**
@@ -155,19 +236,7 @@ std::vector<Config> ConfigParser::buildConfigs() const
 			{
 				if (arguments.size() != 1)
 					throw std::runtime_error("Error: listen requires one argument");
-				std::string listen = arguments[0];
-				size_t colon = listen.find(":");
-				if (colon != std::string::npos)
-				{
-					if (colon == 0 || colon == listen.size() - 1)
-						throw std::runtime_error("Error: invalid listen argument: " + listen);
-					config.setHost(listen.substr(0, colon));
-					listen = listen.substr(colon + 1);
-				}
-				long port = strToLong(listen);
-				if (port < 1 || port > 65535)
-					throw std::runtime_error("Error: invalid port number: " + listen);
-				config.setPort(static_cast<int>(port));
+				config.addListen(parseListen(arguments[0]));
 			}
 			else if (name == "root")
 			{
@@ -180,6 +249,12 @@ std::vector<Config> ConfigParser::buildConfigs() const
 				if (arguments.size() != 1)
 					throw std::runtime_error("Error: index requires one argument");
 				config.setIndex(arguments[0]);
+			}
+			else if (name == "server_name")
+			{
+				if (arguments.size() != 1)
+					throw std::runtime_error("Error: server_name requires one argument");
+				config.setServerName(arguments[0]);
 			}
 			else if (name == "error_page")
 			{
