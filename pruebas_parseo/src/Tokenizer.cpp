@@ -57,12 +57,11 @@ void Tokenizer::check_tokens() const
 }
 
 /**
- * Comprueba el cierre, anidamiento y contenido de los bloques entre llaves.
+ * Comprueba el cierre y anidamiento de los bloques entre llaves.
  */
 void Tokenizer::check_braces() const
 {
 	bool	openBrace = false;
-	int		stringCount;
 
 	for (size_t i = 0; i < _tokens.size(); ++i)
 	{
@@ -73,19 +72,14 @@ void Tokenizer::check_braces() const
 				if (openBrace)
 					throw std::runtime_error("Error: nested opening brace in configuration file");
 				openBrace = true;
-				stringCount = 0;
 			}
 			else if (_tokens[i].getValue() == "}")
 			{
 				if (!openBrace)
 					throw std::runtime_error("Error: closing brace without opening brace");
 				openBrace = false;
-				if (stringCount == 0)
-					throw std::runtime_error("Error: empty block in configuration file");
 			}
 		}
-		else if (_tokens[i].getType() == 2)
-			++stringCount;
 	}
 	if (openBrace)
 		throw std::runtime_error("Error: opening brace without closing brace");

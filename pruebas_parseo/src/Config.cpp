@@ -6,7 +6,7 @@
 /*   By: ide-dieg <ide-dieg@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/03 15:28:35 by mvidal-h          #+#    #+#             */
-/*   Updated: 2026/08/02 18:30:45 by ide-dieg         ###   ########.fr       */
+/*   Updated: 2026/10/06 14:39:02 by ide-dieg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,10 +15,13 @@
  * Default constructor for the Config class. Initializes default values for
  * root and index, and starts without listening endpoints.
  *
- * root: Default root directory ("./").
+ * root: Default root directory ("html/").
  * index: Default index file ("index.html").
+ * server_name: Default server name ("").
+ * _listens: Default listening endpoint ("0.0.0.0:80").
+ * _client_max_body_size: Default maximum client body size (1 MB).
  */
-Config::Config() : _root("./"), _index("index.html"), _server_name(""),
+Config::Config() : _root("html/"), _index("index.html"), _server_name(""),
 	_listens(), _client_max_body_size(1024L * 1024L)
 {
 	std::cout << BOLD_GREEN << "Config default constructor called" << RESET << std::endl;

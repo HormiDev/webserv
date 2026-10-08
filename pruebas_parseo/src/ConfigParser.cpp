@@ -6,7 +6,7 @@
 /*   By: ide-dieg <ide-dieg@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/06 15:01:12 by mvidal-h          #+#    #+#             */
-/*   Updated: 2026/08/01 12:10:34 by ide-dieg         ###   ########.fr       */
+/*   Updated: 2026/10/06 14:31:05 by ide-dieg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -194,7 +194,7 @@ void ConfigParser::check_listen_and_servername() const
 Listen ConfigParser::parseListen(const std::string &argument) const
 {
 	std::string interface = "0.0.0.0";
-	long port = 8000;
+	long port = 80;
 	size_t colon = argument.find(":");
 
 	if (colon != std::string::npos)
