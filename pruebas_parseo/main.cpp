@@ -26,6 +26,35 @@ static void printTokens(const std::vector<Token> &tokens)
 				  << "\"" << std::endl;
 }
 
+static void printDirectives(const std::vector<Directives> &directives,
+	const std::string &indent)
+{
+	for (size_t i = 0; i < directives.size(); ++i)
+	{
+		std::cout << indent << directives[i].getDirective();
+		const std::vector<std::string> &arguments = directives[i].getArguments();
+		for (size_t j = 0; j < arguments.size(); ++j)
+			std::cout << " " << arguments[j];
+		std::cout << ";" << std::endl;
+	}
+}
+
+static void printBlocks(const std::vector<BlockParser> &blocks,
+	const std::string &indent)
+{
+	for (size_t i = 0; i < blocks.size(); ++i)
+	{
+		std::cout << indent << blocks[i].getName();
+		const std::vector<std::string> &arguments = blocks[i].getArguments();
+		for (size_t j = 0; j < arguments.size(); ++j)
+			std::cout << " " << arguments[j];
+		std::cout << " {" << std::endl;
+		printDirectives(blocks[i].getDirectives(), indent + "  ");
+		printBlocks(blocks[i].getBlocks(), indent + "  ");
+		std::cout << indent << "}" << std::endl;
+	}
+}
+
 static void printServers(const std::vector<ServerParser> &servers)
 {
 	std::cout << BOLD_CYAN << "\nSERVERS" << RESET << std::endl;
@@ -33,17 +62,8 @@ static void printServers(const std::vector<ServerParser> &servers)
 	{
 		std::cout << BOLD_YELLOW << "Server[" << i << "]"
 				  << RESET << std::endl;
-		const std::vector<Directives> &directives =
-			servers[i].getDirectives();
-		for (size_t j = 0; j < directives.size(); ++j)
-		{
-			std::cout << "  " << directives[j].getDirective();
-			const std::vector<std::string> &arguments =
-				directives[j].getArguments();
-			for (size_t k = 0; k < arguments.size(); ++k)
-				std::cout << " " << arguments[k];
-			std::cout << ";" << std::endl;
-		}
+		printDirectives(servers[i].getDirectives(), "  ");
+		printBlocks(servers[i].getBlocks(), "  ");
 	}
 }
 

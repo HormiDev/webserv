@@ -11,13 +11,12 @@
 /* ************************************************************************** */
 
 #include "src/ServerParser.hpp"
-#include <iterator>
 #include <stdexcept>
 
 /**
- * Construye un servidor sin directivas.
+ * Construye un servidor sin directivas ni bloques.
  */
-ServerParser::ServerParser() : _directives()
+ServerParser::ServerParser() : _directives(), _blocks()
 {
 }
 
@@ -25,58 +24,41 @@ ServerParser::ServerParser() : _directives()
  * Construye una copia de otro servidor.
  */
 ServerParser::ServerParser(const ServerParser &other)
-	: _directives(other._directives)
+	: _directives(other._directives), _blocks(other._blocks)
 {
 }
 
 /**
- * Sustituye las directivas actuales por las de otro servidor.
+ * Sustituye las directivas y bloques actuales por los de otro servidor.
  */
 ServerParser &ServerParser::operator=(const ServerParser &other)
 {
 	if (this != &other)
+	{
 		_directives = other._directives;
+		_blocks = other._blocks;
+	}
 	return *this;
 }
 
 /**
- * Destruye el servidor y sus directivas.
+ * Destruye el servidor, sus directivas y sus bloques.
  */
 ServerParser::~ServerParser()
 {
 }
 
 /**
- * Recorre un bloque de servidor y recoge cada una de sus directivas.
+ * Parsea las directivas y bloques hasta el cierre localizado por buildServers.
  */
 ServerParser::ServerParser(const std::vector<Token> &tokens,
-	std::vector<Token>::const_iterator iterator) : _directives()
+	std::vector<Token>::const_iterator iterator,
+	std::vector<Token>::const_iterator closingBrace) : _directives(), _blocks()
 {
-	while (iterator != tokens.end())
-	{
-		if (iterator->getType() == 1 && iterator->getValue() == "}")
-		{
-			check_listen();
-			return;
-		}
-		if (iterator->getType() == 1)
-		{
-			++iterator;
-			if (iterator == tokens.end())
-				break;
-			if (iterator->getType() == 1 &&
-				iterator->getValue() == "}")
-			{
-				check_listen();
-				return;
-			}
-			size_t index = static_cast<size_t>(
-				std::distance(tokens.begin(), iterator));
-			_directives.push_back(Directives(tokens, index));
-		}
-		++iterator;
-	}
-	throw std::runtime_error("Error: server block without closing brace");
+	const BlockParser serverBlock(tokens, iterator, closingBrace);
+	_directives = serverBlock.getDirectives();
+	_blocks = serverBlock.getBlocks();
+	check_listen();
 }
 
 /**
@@ -98,6 +80,14 @@ void ServerParser::check_listen() const
 const std::vector<Directives> &ServerParser::getDirectives() const
 {
 	return _directives;
+}
+
+/**
+ * Devuelve los bloques internos del servidor.
+ */
+const std::vector<BlockParser> &ServerParser::getBlocks() const
+{
+	return _blocks;
 }
 
 /**

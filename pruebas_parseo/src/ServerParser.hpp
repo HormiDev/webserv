@@ -13,6 +13,7 @@
 #ifndef SERVERPARSER_HPP
 #define SERVERPARSER_HPP
 
+#include "src/BlockParser.hpp"
 #include "src/Directives.hpp"
 #include "src/Token.hpp"
 #include <string>
@@ -26,14 +27,17 @@ public:
 	ServerParser &operator=(const ServerParser &other);
 	~ServerParser();
 	ServerParser(const std::vector<Token> &tokens,
-		std::vector<Token>::const_iterator iterator);
+			std::vector<Token>::const_iterator iterator,
+			std::vector<Token>::const_iterator closingBrace);
 
 	const std::vector<Directives> &getDirectives() const;
+	const std::vector<BlockParser> &getBlocks() const;
 	std::string getServerName() const;
 	void setDirectives(const std::vector<Directives> &directives);
 
 private:
 	std::vector<Directives> _directives;
+	std::vector<BlockParser> _blocks;
 	void check_listen() const;
 };
 

@@ -121,11 +121,27 @@ void ConfigParser::buildServers()
 		if (iterator->getType() == 2 &&
 			iterator->getValue() == "server")
 		{
-			_servers.push_back(ServerParser(_tokens, iterator));
-			while (iterator != _tokens.end() &&
-				!(iterator->getType() == 1 &&
-				  iterator->getValue() == "}"))
+			std::vector<Token>::const_iterator serverBegin = iterator;
+			int braceCount = 1;
+			++iterator;
+			// Salta la llave de apertura del server, ya incluida en el contador.
+			if (iterator != _tokens.end())
 				++iterator;
+			while (iterator != _tokens.end() && braceCount > 0)
+			{
+				if (iterator->getType() == 1)
+				{
+					if (iterator->getValue() == "{")
+						++braceCount;
+					else if (iterator->getValue() == "}")
+						--braceCount;
+				}
+				if (braceCount > 0)
+					++iterator;
+			}
+			if (braceCount != 0)
+				throw std::runtime_error("Error: server block without closing brace");
+			_servers.push_back(ServerParser(_tokens, serverBegin, iterator));
 		}
 		if (iterator != _tokens.end())
 			++iterator;

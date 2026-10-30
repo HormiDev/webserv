@@ -4,6 +4,7 @@ CXX			=	c++
 CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98
 
 SRC			=	main.cpp \
+				src/BlockParser.cpp \
 				src/Config.cpp \
 				src/ConfigParser.cpp \
 				src/Directives.cpp \
