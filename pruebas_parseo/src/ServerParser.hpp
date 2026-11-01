@@ -38,6 +38,9 @@ public:
 private:
 	std::vector<Directives> _directives;
 	std::vector<BlockParser> _blocks;
+	void check_block_types() const;
+	void check_duplicate_locations() const;
+	void check_directive_types() const;
 	void check_listen() const;
 };
 

@@ -11,6 +11,8 @@
 /* ************************************************************************** */
 
 #include "src/Directives.hpp"
+#include "http/HTTPMethods.hpp"
+#include "http/HTTPStatus.hpp"
 #include <stdexcept>
 
 /**
@@ -113,7 +115,9 @@ void Directives::check_directive() const
 	if (_directive != "listen" && _directive != "root" &&
 		_directive != "index" && _directive != "error_page" &&
 		_directive != "client_max_body_size" &&
-		_directive != "server_name")
+		_directive != "server_name" && _directive != "autoindex" &&
+		_directive != "allowed_methods" && _directive != "return" &&
+		_directive != "upload_store" && _directive != "cgi")
 		throw std::runtime_error("Error: invalid directive: " + _directive);
 	if (_directive == "index")
 		check_index();
@@ -127,6 +131,81 @@ void Directives::check_directive() const
 		check_error_page();
 	else if (_directive == "client_max_body_size")
 		check_client_max_body_size();
+	else if (_directive == "autoindex")
+		check_autoindex();
+	else if (_directive == "allowed_methods")
+		check_allowed_methods();
+	else if (_directive == "return")
+		check_return();
+	else if (_directive == "upload_store")
+		check_upload_store();
+	else if (_directive == "cgi")
+		check_cgi();
+}
+
+/**
+ * Comprueba que autoindex reciba exactamente on u off.
+ */
+void Directives::check_autoindex() const
+{
+	if (_arguments.size() != 1)
+		throw std::runtime_error("Directive autoindex requires exactly one argument");
+	if (_arguments[0] != "on" && _arguments[0] != "off")
+		throw std::runtime_error("Directive autoindex requires on or off");
+}
+
+/**
+ * Comprueba que haya al menos un método HTTP soportado por el servidor.
+ */
+void Directives::check_allowed_methods() const
+{
+	if (_arguments.empty())
+		throw std::runtime_error("Directive allowed_methods requires at least one argument");
+	for (size_t i = 0; i < _arguments.size(); ++i)
+		stringToHTTPMethod(_arguments[i]);
+}
+
+/**
+ * Comprueba un código de redirección soportado y un destino no vacío.
+ */
+void Directives::check_return() const
+{
+	if (_arguments.size() != 2)
+		throw std::runtime_error("Directive return requires exactly two arguments");
+	const HTTPStatus status = stringToHTTPStatus(_arguments[0]);
+	if (status < 300 || status > 399)
+		throw std::runtime_error("Directive return requires a redirection status code");
+	if (_arguments[1].empty())
+		throw std::runtime_error("Directive return target cannot be empty");
+}
+
+/**
+ * Comprueba que upload_store reciba una única ruta no vacía.
+ */
+void Directives::check_upload_store() const
+{
+	if (_arguments.size() != 1)
+		throw std::runtime_error("Directive upload_store requires exactly one argument");
+	if (_arguments[0].empty())
+		throw std::runtime_error("Directive upload_store path cannot be empty");
+	if (_arguments[0].size() > 4096)
+		throw std::runtime_error("Directive upload_store path exceeds maximum path length");
+}
+
+/**
+ * Comprueba una extensión iniciada por punto y la ruta de su intérprete.
+ */
+void Directives::check_cgi() const
+{
+	if (_arguments.size() != 2)
+		throw std::runtime_error("Directive cgi requires exactly two arguments");
+	if (_arguments[0].size() < 2 || _arguments[0][0] != '.' ||
+		_arguments[0].find('/') != std::string::npos)
+		throw std::runtime_error("Directive cgi requires a file extension starting with a dot");
+	if (_arguments[1].empty())
+		throw std::runtime_error("Directive cgi executable path cannot be empty");
+	if (_arguments[1].size() > 4096)
+		throw std::runtime_error("Directive cgi executable path exceeds maximum path length");
 }
 
 /**

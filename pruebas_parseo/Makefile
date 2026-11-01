@@ -9,11 +9,16 @@ SRC			=	main.cpp \
 				src/ConfigParser.cpp \
 				src/Directives.cpp \
 				src/Listen.cpp \
+				src/Location.cpp \
+				src/LocationParser.cpp \
 				src/ServerParser.cpp \
 				src/Token.cpp \
-				src/Tokenizer.cpp
+				src/Tokenizer.cpp \
+				http/HTTPMethods.cpp \
+				http/HTTPStatus.cpp
 
 OBJ			=	$(SRC:.cpp=.o)
+TEST_LOCATIONS	=	tests/test_locations.out
 
 all: $(NAME)
 
@@ -24,11 +29,18 @@ $(NAME): $(OBJ)
 	$(CXX) $(CXXFLAGS) -I. -Isrc -c $< -o $@
 
 clean:
-	rm -f $(OBJ)
+	rm -f $(OBJ) $(TEST_LOCATIONS)
 
 fclean: clean
 	rm -f $(NAME)
 
 re: fclean all
 
-.PHONY: all clean fclean re
+$(TEST_LOCATIONS): tests/test_locations.cpp $(filter-out main.o,$(OBJ))
+	$(CXX) $(CXXFLAGS) -I. -Isrc $^ -o $@
+
+test: $(NAME) $(TEST_LOCATIONS)
+	python3 tests/test_directives.py
+	./$(TEST_LOCATIONS)
+
+.PHONY: all clean fclean re test

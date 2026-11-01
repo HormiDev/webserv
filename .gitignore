@@ -63,3 +63,4 @@ Testing/
 # bin
 webserv
 parser_test
+tests/

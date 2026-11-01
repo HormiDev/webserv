@@ -22,7 +22,7 @@
  * _client_max_body_size: Default maximum client body size (1 MB).
  */
 Config::Config() : _root("html/"), _index("index.html"), _server_name(""),
-	_listens(), _client_max_body_size(1024L * 1024L)
+	_listens(), _client_max_body_size(1024L * 1024L), _locations()
 {
 	std::cout << BOLD_GREEN << "Config default constructor called" << RESET << std::endl;
 }
@@ -35,7 +35,7 @@ Config::Config(const Config &other)
 	: _root(other._root), _index(other._index),
 	  _server_name(other._server_name), _listens(other._listens),
 	  _errorPages(other._errorPages),
-	  _client_max_body_size(other._client_max_body_size)
+	  _client_max_body_size(other._client_max_body_size), _locations(other._locations)
 {
 	std::cout << BOLD_GREEN << "Config copy constructor called" << RESET << std::endl;
 }
@@ -54,6 +54,7 @@ Config &Config::operator=(const Config &other)
 		_listens = other._listens;
 		_errorPages = other._errorPages;
 		_client_max_body_size = other._client_max_body_size;
+		_locations = other._locations;
 	}
 	std::cout << BOLD_GREEN << "Config assignment operator called" << RESET << std::endl;
 	return *this;
@@ -133,6 +134,14 @@ const std::vector<Listen> &Config::getListens() const
 }
 
 /**
+ * Gets the locations configured for this server, in declaration order.
+ */
+const std::vector<Location> &Config::getLocations() const
+{
+	return _locations;
+}
+
+/**
  * Gets the server name.
  * @return The server name, or an empty string if it was not configured.
  */
@@ -147,6 +156,14 @@ std::string Config::getServerName() const
 void Config::addListen(const Listen &listen)
 {
 	_listens.push_back(listen);
+}
+
+/**
+ * Adds a location to this server.
+ */
+void Config::addLocation(const Location &location)
+{
+	_locations.push_back(location);
 }
 
 /**
@@ -196,4 +213,7 @@ void Config::print() const
 	for (std::map<int, std::string>::const_iterator it = _errorPages.begin();
 		 it != _errorPages.end(); ++it)
 		std::cout << "    " << it->first << ": " << it->second << std::endl;
+	std::cout << "  Locations:" << std::endl;
+	for (size_t i = 0; i < _locations.size(); ++i)
+		_locations[i].print();
 }

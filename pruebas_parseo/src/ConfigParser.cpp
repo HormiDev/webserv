@@ -12,6 +12,7 @@
 
 #include "colors.hpp"
 #include "src/ConfigParser.hpp"
+#include "src/LocationParser.hpp"
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
@@ -301,6 +302,9 @@ std::vector<Config> ConfigParser::buildConfigs() const
 			else
 				throw std::runtime_error("Error: unsupported directive: " + name);
 		}
+		const std::vector<BlockParser> &blocks = _servers[i].getBlocks();
+		for (size_t j = 0; j < blocks.size(); ++j)
+			config.addLocation(LocationParser::parse(blocks[j]));
 		configs.push_back(config);
 	}
 	return configs;

@@ -11,6 +11,8 @@
 /* ************************************************************************** */
 
 #include "src/ServerParser.hpp"
+#include "src/LocationParser.hpp"
+#include <set>
 #include <stdexcept>
 
 /**
@@ -58,7 +60,61 @@ ServerParser::ServerParser(const std::vector<Token> &tokens,
 	const BlockParser serverBlock(tokens, iterator, closingBrace);
 	_directives = serverBlock.getDirectives();
 	_blocks = serverBlock.getBlocks();
+	check_block_types();
+	check_duplicate_locations();
+	check_directive_types();
 	check_listen();
+	for (size_t i = 0; i < _blocks.size(); ++i)
+	{
+		const LocationParser location(_blocks[i]);
+	}
+}
+
+/**
+ * Comprueba que los bloques hijos del servidor sean de tipo location.
+ */
+void ServerParser::check_block_types() const
+{
+	for (size_t i = 0; i < _blocks.size(); ++i)
+	{
+		if (_blocks[i].getName() != "location")
+			throw std::runtime_error("Error: only location blocks are allowed inside server: " +
+				_blocks[i].getName());
+	}
+}
+
+/**
+ * Rechaza rutas location repetidas dentro de este servidor.
+ */
+void ServerParser::check_duplicate_locations() const
+{
+	std::set<std::string> paths;
+	for (size_t i = 0; i < _blocks.size(); ++i)
+	{
+		const std::vector<std::string> &arguments = _blocks[i].getArguments();
+		// LocationParser comprueba las cabeceras sin ruta o con varios argumentos.
+		if (arguments.size() != 1)
+			continue;
+		if (!paths.insert(arguments[0]).second)
+			throw std::runtime_error("Error: duplicate location path \"" + arguments[0] +
+				"\" inside server");
+	}
+}
+
+/**
+ * Comprueba solo los nombres de las directivas propias del bloque server.
+ * Sus argumentos ya fueron validados al construir cada Directives.
+ */
+void ServerParser::check_directive_types() const
+{
+	for (size_t i = 0; i < _directives.size(); ++i)
+	{
+		const std::string &name = _directives[i].getDirective();
+		if (name != "listen" && name != "server_name" && name != "root" &&
+			name != "index" && name != "error_page" && name != "client_max_body_size")
+			throw std::runtime_error("Error: directive \"" + name +
+				"\" is not allowed inside server");
+	}
 }
 
 /**

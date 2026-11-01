@@ -47,6 +47,11 @@ private:
 	void check_server_name() const;
 	void check_error_page() const;
 	void check_client_max_body_size() const;
+	void check_autoindex() const;
+	void check_allowed_methods() const;
+	void check_return() const;
+	void check_upload_store() const;
+	void check_cgi() const;
 };
 
 #endif

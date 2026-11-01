@@ -33,7 +33,7 @@ BlockParser::~BlockParser()
  */
 BlockParser::BlockParser(const std::vector<Token> &tokens,
 	std::vector<Token>::const_iterator iterator,
-	std::vector<Token>::const_iterator closingBrace)
+	std::vector<Token>::const_iterator closingBrace, size_t depth)
 	: _name(), _arguments(), _directives(), _blocks()
 {
 	if (iterator == tokens.end() || closingBrace == tokens.end() ||
@@ -52,16 +52,17 @@ BlockParser::BlockParser(const std::vector<Token> &tokens,
 	if (iterator == closingBrace || iterator->getValue() != "{")
 		throw std::runtime_error("Error: block without opening brace: " + _name);
 	++iterator;
-	parseContents(tokens, iterator, closingBrace);
+	parseContents(tokens, iterator, closingBrace, depth);
 }
 
 /**
  * Distingue las directivas terminadas en ; de los bloques abiertos con {.
+ * Permite solo un nivel de bloques hijos dentro del bloque exterior.
  * Cada bloque hijo conserva sus directivas y no las mezcla con las del padre.
  */
 void BlockParser::parseContents(const std::vector<Token> &tokens,
 	std::vector<Token>::const_iterator iterator,
-	std::vector<Token>::const_iterator closingBrace)
+	std::vector<Token>::const_iterator closingBrace, size_t depth)
 {
 	while (iterator != closingBrace)
 	{
@@ -81,8 +82,10 @@ void BlockParser::parseContents(const std::vector<Token> &tokens,
 		}
 		else if (iterator->getValue() == "{")
 		{
+			if (depth >= 1)
+				throw std::runtime_error("Error: nested blocks are not allowed inside " + _name);
 			iterator = findClosingBrace(iterator, closingBrace);
-			_blocks.push_back(BlockParser(tokens, statementBegin, iterator));
+			_blocks.push_back(BlockParser(tokens, statementBegin, iterator, depth + 1));
 		}
 		else
 			throw std::runtime_error("Error: unexpected token in block " + _name +

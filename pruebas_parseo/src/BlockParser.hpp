@@ -15,7 +15,7 @@ public:
 	~BlockParser();
 	BlockParser(const std::vector<Token> &tokens,
 		std::vector<Token>::const_iterator iterator,
-		std::vector<Token>::const_iterator closingBrace);
+		std::vector<Token>::const_iterator closingBrace, size_t depth = 0);
 
 	const std::string &getName() const;
 	const std::vector<std::string> &getArguments() const;
@@ -30,7 +30,7 @@ private:
 
 	void parseContents(const std::vector<Token> &tokens,
 		std::vector<Token>::const_iterator iterator,
-		std::vector<Token>::const_iterator closingBrace);
+		std::vector<Token>::const_iterator closingBrace, size_t depth);
 	std::vector<Token>::const_iterator findClosingBrace(
 		std::vector<Token>::const_iterator openingBrace,
 		std::vector<Token>::const_iterator limit) const;
