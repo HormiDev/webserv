@@ -6,7 +6,7 @@
 /*   By: ide-dieg <ide-dieg@student.42madrid.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/03 15:28:35 by mvidal-h          #+#    #+#             */
-/*   Updated: 2026/10/06 14:39:02 by ide-dieg         ###   ########.fr       */
+/*   Updated: 2026/11/03 14:08:56 by ide-dieg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
  * _client_max_body_size: Default maximum client body size (1 MB).
  */
 Config::Config() : _root("html/"), _index("index.html"), _server_name(""),
-	_listens(), _client_max_body_size(1024L * 1024L), _locations()
+	_listens(), _clientMaxBodySize(1024L * 1024L), _locations()
 {
 	std::cout << BOLD_GREEN << "Config default constructor called" << RESET << std::endl;
 }
@@ -35,7 +35,7 @@ Config::Config(const Config &other)
 	: _root(other._root), _index(other._index),
 	  _server_name(other._server_name), _listens(other._listens),
 	  _errorPages(other._errorPages),
-	  _client_max_body_size(other._client_max_body_size), _locations(other._locations)
+	  _clientMaxBodySize(other._clientMaxBodySize), _locations(other._locations)
 {
 	std::cout << BOLD_GREEN << "Config copy constructor called" << RESET << std::endl;
 }
@@ -53,7 +53,7 @@ Config &Config::operator=(const Config &other)
 		_server_name = other._server_name;
 		_listens = other._listens;
 		_errorPages = other._errorPages;
-		_client_max_body_size = other._client_max_body_size;
+		_clientMaxBodySize = other._clientMaxBodySize;
 		_locations = other._locations;
 	}
 	std::cout << BOLD_GREEN << "Config assignment operator called" << RESET << std::endl;
@@ -102,9 +102,9 @@ std::string Config::getErrorPage(int errorCode) const
 /**
  * Gets the maximum accepted request body size in bytes.
  */
-long Config::getClientMaxBodySize() const
+size_t Config::getClientMaxBodySize() const
 {
-	return _client_max_body_size;
+	return _clientMaxBodySize;
 }
 
 /**
@@ -188,9 +188,9 @@ void Config::setErrorPage(int errorCode, const std::string &errorPagePath)
 /**
  * Sets the maximum accepted request body size in bytes.
  */
-void Config::setClientMaxBodySize(long clientMaxBodySize)
+void Config::setClientMaxBodySize(size_t clientMaxBodySize)
 {
-	_client_max_body_size = clientMaxBodySize;
+	_clientMaxBodySize = clientMaxBodySize;
 }
 
 /**
@@ -208,7 +208,7 @@ void Config::print() const
 			<< _listens[i].getPort() << std::endl;
 	std::cout << "  Server name: " << _server_name << std::endl;
 	std::cout << "  Client max body size: "
-		<< _client_max_body_size << " bytes" << std::endl;
+		<< _clientMaxBodySize << " bytes" << std::endl;
 	std::cout << "  Error Pages:" << std::endl;
 	for (std::map<int, std::string>::const_iterator it = _errorPages.begin();
 		 it != _errorPages.end(); ++it)
@@ -216,4 +216,26 @@ void Config::print() const
 	std::cout << "  Locations:" << std::endl;
 	for (size_t i = 0; i < _locations.size(); ++i)
 		_locations[i].print();
+}
+
+
+/**
+ * Finds the most specific Location that matches the given path.
+ * @param path The request path to match against the configured Locations.
+ * @return A pointer to the matching Location, or NULL if none is found.
+ */
+const Location* Config::findLocation(const std::string &path) const
+{
+	const Location* location = NULL;
+	
+	for (size_t i = 0; i < _locations.size(); ++i) // Por cada location del config...
+	{
+		std::string locationPath = _locations[i].getPath();
+		size_t locationPathLength = locationPath.length();
+
+		if (locationPath == "/" || (path.compare(0, locationPathLength, locationPath) == 0 && (path.length() == locationPathLength || path[locationPathLength] == '/'))) //Si la location es "/" o Si el path de la petición empieza por la location y es una ruta completa o termina en '/'. Con esto evitamos que coja como location una parcial, ej location /images para la petición /images2  X no valida X
+			if (location == NULL || locationPathLength > location->getPath().length()) // Si no hay location seleccionada o la nueva es más específica (más larga), la seleccionamos.
+				location = &_locations[i];
+	}
+	return location;
 }
